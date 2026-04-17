@@ -1,0 +1,115 @@
+/* ═══════════════════════════════════════
+   سمو — Design Tokens
+   Premium Arabic Audio Platform
+   ═══════════════════════════════════════ */
+
+:root {
+    /* ─── Gold Palette ─── */
+    --gold: #D4AF37;
+    --gold-light: #F5E6A3;
+    --gold-dark: #B8960C;
+    --gold-50: rgba(212, 175, 55, 0.05);
+    --gold-10: rgba(212, 175, 55, 0.1);
+    --gold-20: rgba(212, 175, 55, 0.2);
+    --gradient-gold: linear-gradient(135deg, #D4AF37 0%, #F5E6A3 50%, #D4AF37 100%);
+    --gradient-gold-btn: linear-gradient(135deg, #D4AF37 0%, #B8960C 100%);
+    --gradient-gold-text: linear-gradient(135deg, #F5E6A3, #D4AF37, #B8960C);
+
+    /* ─── Dark Palette ─── */
+    --black: #0A0A0A;
+    --black-card: #111111;
+    --black-elevated: #1A1A1A;
+    --black-border: #252525;
+    --black-hover: #1E1E1E;
+
+    /* ─── Light Palette ─── */
+    --white: #FAFAFA;
+    --white-90: rgba(250, 250, 250, 0.9);
+    --white-70: rgba(250, 250, 250, 0.7);
+    --white-50: rgba(250, 250, 250, 0.5);
+    --white-muted: #888888;
+    --white-dim: #666666;
+
+    /* ─── Status Colors ─── */
+    --success: #2ECC71;
+    --success-bg: rgba(46, 204, 113, 0.15);
+    --warning: #F39C12;
+    --warning-bg: rgba(243, 156, 18, 0.15);
+    --info: #3498DB;
+    --info-bg: rgba(52, 152, 219, 0.15);
+    --error: #E74C3C;
+    --error-bg: rgba(231, 76, 60, 0.15);
+
+    /* ─── WhatsApp ─── */
+    --whatsapp: #25D366;
+    --whatsapp-dark: #128C7E;
+
+    /* ─── Typography ─── */
+    --font-primary: 'Tajawal', 'Segoe UI', sans-serif;
+    --fs-xs: clamp(0.7rem, 0.65rem + 0.25vw, 0.8rem);
+    --fs-sm: clamp(0.8rem, 0.75rem + 0.3vw, 0.9rem);
+    --fs-base: clamp(0.9rem, 0.85rem + 0.35vw, 1rem);
+    --fs-md: clamp(1rem, 0.9rem + 0.5vw, 1.15rem);
+    --fs-lg: clamp(1.15rem, 1rem + 0.7vw, 1.4rem);
+    --fs-xl: clamp(1.4rem, 1.15rem + 1.2vw, 1.85rem);
+    --fs-2xl: clamp(1.75rem, 1.35rem + 2vw, 2.5rem);
+    --fs-3xl: clamp(2.2rem, 1.5rem + 3.5vw, 3.5rem);
+    --fs-hero: clamp(2rem, 1.2rem + 4vw, 3.8rem);
+
+    --fw-light: 300;
+    --fw-regular: 400;
+    --fw-medium: 500;
+    --fw-bold: 700;
+    --fw-black: 900;
+
+    --lh-tight: 1.3;
+    --lh-normal: 1.6;
+    --lh-relaxed: 1.8;
+
+    /* ─── Spacing ─── */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
+    --space-3xl: 4rem;
+    --space-4xl: 6rem;
+    --space-section: clamp(3rem, 2rem + 5vw, 6rem);
+
+    /* ─── Layout ─── */
+    --container-max: 1200px;
+    --container-padding: clamp(1rem, 3vw, 2rem);
+
+    /* ─── Borders & Radius ─── */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --radius-full: 9999px;
+
+    /* ─── Shadows ─── */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.5);
+    --shadow-gold: 0 4px 20px rgba(212, 175, 55, 0.25);
+    --shadow-gold-lg: 0 8px 40px rgba(212, 175, 55, 0.3);
+
+    /* ─── Glass ─── */
+    --glass-bg: rgba(10, 10, 10, 0.75);
+    --glass-border: rgba(212, 175, 55, 0.15);
+    --glass-blur: 20px;
+
+    /* ─── Transitions ─── */
+    --transition-fast: 0.15s ease;
+    --transition-base: 0.3s ease;
+    --transition-slow: 0.5s ease;
+    --transition-spring: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    /* ─── Z-index ─── */
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-nav: 300;
+    --z-modal: 400;
+    --z-whatsapp: 500;
+}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}طلب #{{ order.id }}{% endblock %}
+
+{% block content %}
+<section class="dashboard-page">
+    <div class="container">
+        <div class="dashboard-header">
+            <h1>طلب <span class="gold-text">#{{ order.id }}</span></h1>
+            <span class="badge badge-{{ order.status_color }}" style="font-size: var(--fs-sm); padding: 0.5rem 1.2rem;">{{ order.status_label }}</span>
+        </div>
+
+        <div class="order-detail">
+            <!-- Order Info -->
+            <div class="order-info-card animate-on-scroll">
+                <h2>تفاصيل الطلب</h2>
+                <div class="order-info-grid">
+                    <div class="order-info-item">
+                        <div class="order-info-item__label">الأسماء المطلوبة</div>
+                        <div class="order-info-item__value">{{ order.names_requested }}</div>
+                    </div>
+                    <div class="order-info-item">
+                        <div class="order-info-item__label">نوع المناسبة</div>
+                        <div class="order-info-item__value">{{ order.occasion_type }}</div>
+                    </div>
+                    <div class="order-info-item">
+                        <div class="order-info-item__label">نوع العمل</div>
+                        <div class="order-info-item__value">{{ order.work_type }}</div>
+                    </div>
+                    <div class="order-info-item">
+                        <div class="order-info-item__label">رقم الواتساب</div>
+                        <div class="order-info-item__value" dir="ltr">{{ order.whatsapp_number }}</div>
+                    </div>
+                    {% if order.reference_sample %}
+                    <div class="order-info-item">
+                        <div class="order-info-item__label">العمل المرجعي</div>
+                        <div class="order-info-item__value">{{ order.reference_sample.title }}</div>
+                    </div>
+                    {% endif %}
+                    <div class="order-info-item">
+                        <div class="order-info-item__label">تاريخ الطلب</div>
+                        <div class="order-info-item__value">{{ order.created_at.strftime('%Y/%m/%d - %H:%M') }}</div>
+                    </div>
+                </div>
+
+                {% if order.details %}
+                <div style="margin-top: var(--space-xl); padding-top: var(--space-lg); border-top: 1px solid var(--black-border);">
+                    <div class="order-info-item">
+                        <div class="order-info-item__label">تفاصيل إضافية</div>
+                        <div class="order-info-item__value" style="margin-top: var(--space-sm); line-height: var(--lh-relaxed);">{{ order.details }}</div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Tracking Timeline -->
+            <div class="order-info-card animate-on-scroll">
+                <h2>متابعة الطلب</h2>
+                
+                {% if tracking %}
+                <div class="timeline">
+                    {% for update in tracking %}
+                    <div class="timeline-item timeline-item--{{ 'success' if update.status == 'delivered' else ('warning' if update.status == 'in_progress' else 'info') }}">
+                        <div class="timeline-item__dot"></div>
+                        <div class="timeline-item__status">{{ update.status_label }}</div>
+                        {% if update.note %}
+                        <div class="timeline-item__note">{{ update.note }}</div>
+                        {% endif %}
+                        <div class="timeline-item__date">{{ update.created_at.strftime('%Y/%m/%d - %H:%M') }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p style="color: var(--white-muted); font-size: var(--fs-sm);">لا توجد تحديثات بعد</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div style="margin-top: var(--space-xl);">
+            <a href="{{ url_for('orders.dashboard') }}" class="btn btn-outline-light">← العودة لطلباتي</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}طلب مخصص{% endblock %}
+
+{% block content %}
+<section class="order-page">
+    <div class="container">
+        <div class="order-form-card animate-on-scroll">
+            <h1>اطلب عمل <span class="gold-text">مخصص</span></h1>
+            <p class="form-subtitle">أرسل تفاصيل طلبك وسنتواصل معك في أقرب وقت</p>
+
+            <form method="POST" action="{{ url_for('orders.new_order') }}" id="orderForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <!-- Names -->
+                <div class="form-group">
+                    <label class="form-label" for="names_requested">الاسم / الأسماء المطلوبة *</label>
+                    <input type="text" class="form-control" id="names_requested" name="names_requested" required
+                           placeholder="مثال: محمد وسارة">
+                </div>
+
+                <!-- Occasion & Work Type -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="occasion_type">نوع المناسبة *</label>
+                        <select class="form-control" id="occasion_type" name="occasion_type" required>
+                            <option value="">اختر نوع المناسبة</option>
+                            <option value="زفاف">زفاف</option>
+                            <option value="خطوبة">خطوبة</option>
+                            <option value="تخرج">تخرج</option>
+                            <option value="مولود">مولود جديد</option>
+                            <option value="نجاح">نجاح</option>
+                            <option value="عيد">عيد</option>
+                            <option value="مناسبة شخصية">مناسبة شخصية</option>
+                            <option value="أخرى">أخرى</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="work_type">نوع العمل *</label>
+                        <select class="form-control" id="work_type" name="work_type" required>
+                            <option value="">اختر نوع العمل</option>
+                            <option value="زفة">زفة</option>
+                            <option value="شيلة">شيلة</option>
+                            <option value="مقطع صوتي">مقطع صوتي</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Reference Sample -->
+                <div class="form-group">
+                    <label class="form-label" for="reference_sample_id">اختيار مثال (اختياري)</label>
+                    <select class="form-control" id="reference_sample_id" name="reference_sample_id">
+                        <option value="">بدون مرجع — عمل جديد بالكامل</option>
+                        {% for sample in samples %}
+                            <option value="{{ sample.id }}" {% if ref_sample_id and ref_sample_id|string == sample.id|string %}selected{% endif %}>
+                                {{ sample.title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Details -->
+                <div class="form-group">
+                    <label class="form-label" for="details">تفاصيل إضافية</label>
+                    <textarea class="form-control" id="details" name="details"
+                              placeholder="أي تفاصيل إضافية ترغب في إضافتها — كلمات معينة، أسلوب محدد، ملاحظات..."></textarea>
+                </div>
+
+                <!-- WhatsApp Number -->
+                <div class="form-group">
+                    <label class="form-label" for="whatsapp_number">رقم الواتساب للتواصل *</label>
+                    <input type="tel" class="form-control" id="whatsapp_number" name="whatsapp_number" required
+                           placeholder="05XXXXXXXX" dir="ltr" style="text-align: left;">
+                </div>
+
+                <!-- Submit Options -->
+                {% if current_user.is_authenticated %}
+                    <div class="form-actions">
+                        <button type="submit" name="order_method" value="database" class="btn btn-primary btn-lg btn-block">
+                            إرسال الطلب
+                        </button>
+                    </div>
+                    <div class="form-divider">أو</div>
+                    <div class="form-actions">
+                        <button type="submit" name="order_method" value="whatsapp" class="btn btn-whatsapp btn-lg btn-block">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                            إرسال عبر واتساب
+                        </button>
+                    </div>
+                {% else %}
+                    <div class="form-actions">
+                        <button type="submit" name="order_method" value="whatsapp" class="btn btn-whatsapp btn-lg btn-block">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                            إرسال عبر واتساب
+                        </button>
+                    </div>
+                    <p style="text-align: center; font-size: var(--fs-sm); color: var(--white-muted); margin-top: var(--space-lg);">
+                        <a href="{{ url_for('auth.register') }}">سجل حساب</a> لتتمكن من متابعة حالة طلبك
+                    </p>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'تعديل عمل' if sample else 'إضافة عمل جديد' }}{% endblock %}
+
+{% block content %}
+<section class="order-page">
+    <div class="container">
+        <div class="order-form-card animate-on-scroll">
+            <h1>{% if sample %}تعديل <span class="gold-text">عمل</span>{% else %}إضافة عمل <span class="gold-text">جديد</span>{% endif %}</h1>
+            <p class="form-subtitle">{% if sample %}عدّل بيانات العمل{% else %}أضف عمل جديد لعرضه في المنصة{% endif %}</p>
+
+            <form method="POST" enctype="multipart/form-data"
+                  action="{% if sample %}{{ url_for('admin.edit_sample', sample_id=sample.id) }}{% else %}{{ url_for('admin.add_sample') }}{% endif %}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <!-- Title -->
+                <div class="form-group">
+                    <label class="form-label" for="title">عنوان العمل *</label>
+                    <input type="text" class="form-control" id="title" name="title" required
+                           value="{{ sample.title if sample else '' }}"
+                           placeholder="مثال: زفة العروسين">
+                </div>
+
+                <!-- Category -->
+                <div class="form-group">
+                    <label class="form-label" for="category_id">القسم *</label>
+                    <select class="form-control" id="category_id" name="category_id" required>
+                        <option value="">اختر القسم</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat.id }}" {% if sample and sample.category_id == cat.id %}selected{% endif %}>
+                                {{ cat.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Media Type -->
+                <div class="form-group">
+                    <label class="form-label">نوع الوسائط *</label>
+                    <div style="display: flex; gap: var(--space-lg); margin-top: var(--space-sm);">
+                        <label style="display: flex; align-items: center; gap: var(--space-sm); cursor: pointer; color: var(--white-70);">
+                            <input type="radio" name="media_type" value="youtube" id="mediaYoutube"
+                                   {% if not sample or sample.media_type == 'youtube' %}checked{% endif %}
+                                   onchange="toggleMediaInput()">
+                            رابط YouTube
+                        </label>
+                        <label style="display: flex; align-items: center; gap: var(--space-sm); cursor: pointer; color: var(--white-70);">
+                            <input type="radio" name="media_type" value="upload" id="mediaUpload"
+                                   {% if sample and sample.media_type == 'upload' %}checked{% endif %}
+                                   onchange="toggleMediaInput()">
+                            رفع ملف
+                        </label>
+                    </div>
+                </div>
+
+                <!-- YouTube URL -->
+                <div class="form-group" id="youtubeInput">
+                    <label class="form-label" for="youtube_url">رابط YouTube</label>
+                    <input type="url" class="form-control" id="youtube_url" name="youtube_url"
+                           value="{{ sample.media_url if sample and sample.media_type == 'youtube' else '' }}"
+                           placeholder="https://www.youtube.com/watch?v=..." dir="ltr" style="text-align: left;">
+                </div>
+
+                <!-- File Upload -->
+                <div class="form-group" id="uploadInput" style="display: none;">
+                    <label class="form-label" for="media_file">رفع ملف صوتي/مرئي</label>
+                    <input type="file" class="form-control" id="media_file" name="media_file"
+                           accept="audio/*,video/*" style="padding: var(--space-sm);">
+                    {% if sample and sample.media_type == 'upload' %}
+                    <p style="font-size: var(--fs-xs); color: var(--white-muted); margin-top: var(--space-sm);">
+                        الملف الحالي: {{ sample.media_url }}
+                    </p>
+                    {% endif %}
+                </div>
+
+                <!-- Featured -->
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: var(--space-sm); cursor: pointer; color: var(--white-70);">
+                        <input type="checkbox" name="is_featured" id="is_featured"
+                               {% if sample and sample.is_featured %}checked{% endif %}>
+                        عرض في الصفحة الرئيسية (مميز)
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-lg btn-block">
+                        {{ 'حفظ التعديلات' if sample else 'إضافة العمل' }}
+                    </button>
+                </div>
+            </form>
+
+            <div style="margin-top: var(--space-lg); text-align: center;">
+                <a href="{{ url_for('admin.samples') }}" class="btn btn-outline-light">العودة للأعمال</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleMediaInput() {
+    const youtube = document.getElementById('mediaYoutube');
+    const youtubeInput = document.getElementById('youtubeInput');
+    const uploadInput = document.getElementById('uploadInput');
+    
+    if (youtube.checked) {
+        youtubeInput.style.display = 'block';
+        uploadInput.style.display = 'none';
+    } else {
+        youtubeInput.style.display = 'none';
+        uploadInput.style.display = 'block';
+    }
+}
+// Run on page load
+document.addEventListener('DOMContentLoaded', toggleMediaInput);
+</script>
+{% endblock %}

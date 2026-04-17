@@ -1,0 +1,195 @@
+# سمو — Premium Arabic Audio Service Website
+
+Build a luxurious, mobile-first, RTL Arabic website for a Gulf audio brand specializing in زفات, شيلات, and custom audio content. The site targets Saudi/Gulf audiences and is conversion-focused.
+
+## Architecture
+
+**Static multi-page site** using vanilla HTML, CSS, and JavaScript — no framework needed. Each page is a standalone `.html` file sharing a common CSS design system and JS utilities.
+
+### File Structure
+
+```
+studio_song/
+├── index.html              # Homepage
+├── category.html            # Category page (dynamic via query param)
+├── custom-order.html        # Custom request form page
+├── about.html               # About page
+├── css/
+│   ├── variables.css        # Design tokens (colors, fonts, spacing)
+│   ├── base.css             # Reset, RTL, typography, global styles
+│   ├── components.css       # Buttons, cards, navigation, footer
+│   └── pages.css            # Page-specific styles
+├── js/
+│   ├── data.js              # Sample works data, categories, artists
+│   ├── components.js        # Shared components (nav, footer, WhatsApp)
+│   └── main.js              # Page-specific logic, routing, interactions
+└── assets/
+    └── (generated images)
+```
+
+---
+
+## Design System
+
+### Color Palette
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--gold` | `#D4AF37` | Primary accent, CTAs, highlights |
+| `--gold-light` | `#F5E6A3` | Hover states, subtle accents |
+| `--black` | `#0A0A0A` | Primary background |
+| `--black-soft` | `#1A1A1A` | Card backgrounds, elevated surfaces |
+| `--black-medium` | `#2A2A2A` | Borders, dividers |
+| `--white` | `#FAFAFA` | Primary text |
+| `--white-muted` | `#B0B0B0` | Secondary text |
+| `--gradient-gold` | `linear-gradient(135deg, #D4AF37, #B8960C)` | Premium buttons |
+| `--gradient-hero` | `radial-gradient(...)` | Hero background |
+
+### Typography
+- **Primary Font**: `Tajawal` (Google Fonts — clean, modern Arabic font)
+- **Display Font**: `Amiri` (for ornamental headings, optional)
+- Font sizes: Fluid typography with `clamp()` for responsive scaling
+
+### Spacing & Layout
+- 8px base grid system
+- Container max-width: `1200px`
+- Mobile-first breakpoints: `480px`, `768px`, `1024px`, `1280px`
+
+---
+
+## Proposed Changes
+
+### Design System Files
+
+#### [NEW] [variables.css](file:///c:/Users/Owner/Desktop/studio_song/css/variables.css)
+All CSS custom properties: colors, typography scale, spacing, shadows, border-radius, transitions.
+
+#### [NEW] [base.css](file:///c:/Users/Owner/Desktop/studio_song/css/base.css)
+- CSS reset (modern normalize)
+- RTL direction (`dir="rtl"`, `direction: rtl`)
+- Global typography with `Tajawal` from Google Fonts
+- Utility classes for flex, grid, text alignment
+- Smooth scroll behavior
+- Selection styling (gold)
+
+#### [NEW] [components.css](file:///c:/Users/Owner/Desktop/studio_song/css/components.css)
+- **Navigation**: Sticky top nav with glass-morphism, mobile hamburger menu
+- **Buttons**: Primary (gold gradient), secondary (outlined), WhatsApp (green)
+- **Cards**: Work sample cards with video preview, glass overlay, hover animations
+- **Category tiles**: Grid cards with background images and overlay text
+- **Steps section**: Numbered step cards
+- **Footer**: Full-width dark footer with columns
+- **Sticky WhatsApp**: Floating button, bottom-left (RTL), pulse animation
+
+#### [NEW] [pages.css](file:///c:/Users/Owner/Desktop/studio_song/css/pages.css)
+- Hero section styles with background gradient/particles
+- Featured works carousel/grid
+- Category grid layout
+- Custom order form styling
+- About page content styling
+
+---
+
+### JavaScript Files
+
+#### [NEW] [data.js](file:///c:/Users/Owner/Desktop/studio_song/js/data.js)
+Sample data arrays:
+- `sampleWorks[]` — 8-10 sample works with title, category, inspired-by artist, video placeholder URL
+- `categories[]` — 5 categories with name, icon, description, slug
+- `artists[]` — Gulf artist names for inspired-by labels
+- `occasions[]` — Occasion types for the form
+
+#### [NEW] [components.js](file:///c:/Users/Owner/Desktop/studio_song/js/components.js)
+- `renderNavbar()` — Shared navigation across pages
+- `renderFooter()` — Shared footer
+- `renderWhatsAppButton()` — Sticky floating WhatsApp
+- `renderWorkCard(work)` — Reusable sample card
+- `renderCategoryCard(category)` — Category tile
+
+#### [NEW] [main.js](file:///c:/Users/Owner/Desktop/studio_song/js/main.js)
+- Page initialization and routing
+- Mobile menu toggle
+- Scroll animations (Intersection Observer)
+- Form validation and WhatsApp redirect
+- Category page filtering (reads `?cat=` query param)
+- Smooth scroll for anchor links
+
+---
+
+### HTML Pages
+
+#### [NEW] [index.html](file:///c:/Users/Owner/Desktop/studio_song/index.html)
+**Sections:**
+1. Navigation bar (sticky, glass)
+2. Hero section with headline, subtext, 3 CTA buttons, particle/gold accent background
+3. Featured Works grid (6-8 cards with video previews)
+4. Categories grid (5 tiles)
+5. How It Works (3 steps)
+6. CTA banner ("اطلب عملك المخصص الآن")
+7. Footer
+
+#### [NEW] [category.html](file:///c:/Users/Owner/Desktop/studio_song/category.html)
+- Reads `?cat=slug` from URL
+- Shows category title + description
+- Grid of filtered sample works
+- Bottom banner: "لم تجد ما تبحث عنه؟ اطلب عمل مخصص بالكامل"
+
+#### [NEW] [custom-order.html](file:///c:/Users/Owner/Desktop/studio_song/custom-order.html)
+- Styled form with all required fields
+- Inspired-by artist dropdown
+- Optional file/example reference
+- Submit → WhatsApp message with form data pre-filled
+
+#### [NEW] [about.html](file:///c:/Users/Owner/Desktop/studio_song/about.html)
+- Brand story section
+- Values/features (quality, speed, personalization)
+- CTA to order
+
+---
+
+### Assets
+
+Generated images for:
+- Hero background or decorative gold pattern
+- Category thumbnail images (5)
+- Brand logo placeholder
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Video/Audio Samples**: The site will use placeholder video embeds (YouTube-style iframes or styled `<video>` elements with poster images). You'll need to replace these with your actual content URLs later.
+
+> [!IMPORTANT]
+> **WhatsApp Number**: The WhatsApp button and form submission will use a placeholder number (`+966XXXXXXXXX`). You'll need to update this with your real WhatsApp Business number.
+
+> [!NOTE]
+> **No Backend**: The custom order form will redirect to WhatsApp with pre-filled message data. No server-side processing is included. If you need a backend (email, database), that would be a separate phase.
+
+---
+
+## Open Questions
+
+1. **Do you have a logo** for "سمو" or should I create a text-based logo with styling?
+2. **WhatsApp number** — what number should the WhatsApp buttons link to?
+3. **Do you have actual video/audio sample URLs** (YouTube, etc.) to embed, or should I use styled placeholders?
+4. **Any specific Gulf artists** you want listed in the "inspired by" labels?
+5. **Domain/hosting** — are you planning to host this on a specific platform?
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- Open each page in the browser and verify RTL layout renders correctly
+- Test responsive design at mobile (375px), tablet (768px), and desktop (1280px)
+- Verify all navigation links work between pages
+- Test category page with different `?cat=` parameters
+- Verify form validation on custom order page
+- Test WhatsApp redirect generates correct message
+
+### Manual Verification
+- Visual review of all pages for premium aesthetic quality
+- Verify Arabic text rendering and typography
+- Test smooth animations and hover effects
+- Verify sticky WhatsApp button visibility on all pages

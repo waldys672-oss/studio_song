@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}لوحة التحكم{% endblock %}
+
+{% block content %}
+<section class="admin-page">
+    <div class="container">
+        <div class="dashboard-header">
+            <h1>لوحة <span class="gold-text">التحكم</span></h1>
+        </div>
+
+        <!-- Stats -->
+        <div class="admin-stats">
+            <div class="stat-card animate-on-scroll">
+                <div class="stat-card__value">{{ total_samples }}</div>
+                <div class="stat-card__label">الأعمال</div>
+            </div>
+            <div class="stat-card animate-on-scroll">
+                <div class="stat-card__value">{{ total_orders }}</div>
+                <div class="stat-card__label">إجمالي الطلبات</div>
+            </div>
+            <div class="stat-card animate-on-scroll">
+                <div class="stat-card__value" style="color: var(--info);">{{ new_orders }}</div>
+                <div class="stat-card__label">طلبات جديدة</div>
+            </div>
+            <div class="stat-card animate-on-scroll">
+                <div class="stat-card__value" style="color: var(--warning);">{{ in_progress }}</div>
+                <div class="stat-card__label">قيد التنفيذ</div>
+            </div>
+            <div class="stat-card animate-on-scroll">
+                <div class="stat-card__value" style="color: var(--success);">{{ delivered }}</div>
+                <div class="stat-card__label">تم التسليم</div>
+            </div>
+            <div class="stat-card animate-on-scroll">
+                <div class="stat-card__value">{{ total_users }}</div>
+                <div class="stat-card__label">المستخدمين</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div style="display: flex; gap: var(--space-md); margin-bottom: var(--space-2xl); flex-wrap: wrap;">
+            <a href="{{ url_for('admin.add_sample') }}" class="btn btn-primary">إضافة عمل جديد</a>
+            <a href="{{ url_for('admin.samples') }}" class="btn btn-secondary">إدارة الأعمال</a>
+            <a href="{{ url_for('admin.orders') }}" class="btn btn-secondary">إدارة الطلبات</a>
+        </div>
+
+        <!-- Recent Orders -->
+        {% if recent_orders %}
+        <div class="order-info-card animate-on-scroll">
+            <h2>آخر الطلبات</h2>
+            <div class="admin-table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>الأسماء</th>
+                            <th>المناسبة</th>
+                            <th>نوع العمل</th>
+                            <th>الحالة</th>
+                            <th>التاريخ</th>
+                            <th>إجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in recent_orders %}
+                        <tr>
+                            <td>{{ order.id }}</td>
+                            <td>{{ order.names_requested }}</td>
+                            <td>{{ order.occasion_type }}</td>
+                            <td>{{ order.work_type }}</td>
+                            <td><span class="badge badge-{{ order.status_color }}">{{ order.status_label }}</span></td>
+                            <td>{{ order.created_at.strftime('%m/%d') }}</td>
+                            <td>
+                                <a href="{{ url_for('admin.order_detail', order_id=order.id) }}" class="btn btn-sm btn-outline-light">عرض</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

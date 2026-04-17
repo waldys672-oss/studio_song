@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}الرئيسية{% endblock %}
+
+{% block content %}
+<!-- ═══ Hero Section ═══ -->
+<section class="hero" id="hero">
+    <div class="hero-particles">
+        <div class="hero-particle"></div>
+        <div class="hero-particle"></div>
+        <div class="hero-particle"></div>
+        <div class="hero-particle"></div>
+        <div class="hero-particle"></div>
+        <div class="hero-particle"></div>
+    </div>
+
+    <div class="hero-content animate-on-scroll">
+        <h1>اطلب <span class="gold-text">زفتك</span> أو <span class="gold-text">شيلتك</span> الخاصة باسمك</h1>
+        <p class="hero-subtext">
+            نصمم لك أعمال صوتية مخصصة بأسمائكم وتفاصيل مناسبتكم — زفات أفراح، شيلات حماسية، ومقاطع صوتية لجميع المناسبات الخليجية
+        </p>
+        <div class="hero-buttons">
+            <a href="#featured" class="btn btn-primary btn-lg">تصفح الأعمال</a>
+            <a href="{{ url_for('orders.new_order') }}" class="btn btn-secondary btn-lg">اطلب الآن</a>
+            <a href="{{ url_for('orders.new_order') }}" class="btn btn-outline-light btn-lg">اطلب عمل مخصص</a>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ Featured Works ═══ -->
+<section class="section" id="featured">
+    <div class="container">
+        <div class="section-header animate-on-scroll">
+            <h2>أعمالنا <span class="gold-text">المميزة</span></h2>
+            <p>استمع إلى نماذج من أعمالنا واختر ما يناسب ذوقك ومناسبتك</p>
+        </div>
+
+        <div class="samples-grid">
+            {% if featured_samples %}
+                {% for sample in featured_samples %}
+                <div class="sample-card animate-on-scroll">
+                    <div class="sample-card__media">
+                        {% if sample.media_type == 'youtube' %}
+                            <iframe
+                                src="https://www.youtube.com/embed/{{ sample.get_youtube_embed_id() }}"
+                                title="{{ sample.title }}"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen
+                                loading="lazy">
+                            </iframe>
+                        {% elif sample.media_type == 'upload' %}
+                            <video controls preload="metadata">
+                                <source src="{{ url_for('static', filename='uploads/' + sample.media_url) }}">
+                            </video>
+                        {% else %}
+                            <div class="sample-card__media-placeholder">🎵</div>
+                        {% endif %}
+                    </div>
+                    <div class="sample-card__body">
+                        <h3 class="sample-card__title">{{ sample.title }}</h3>
+                        <div class="sample-card__actions">
+                            <a href="{{ url_for('orders.new_order', sample_id=sample.id) }}" class="btn btn-primary btn-sm">اطلب مثل هذا العمل</a>
+                            <a href="{{ url_for('orders.new_order', sample_id=sample.id) }}" class="btn btn-secondary btn-sm">تعديل بالأسماء</a>
+                            <a href="https://wa.me/{{ whatsapp_number.replace('+', '') }}?text={{ ('أريد عمل مشابه لـ: ' + sample.title) | urlencode }}" target="_blank" class="btn btn-whatsapp btn-sm">واتساب</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="samples-empty">
+                    <div class="samples-empty__icon">🎵</div>
+                    <p>سيتم إضافة الأعمال قريباً — تابعونا!</p>
+                    <a href="{{ url_for('orders.new_order') }}" class="btn btn-primary" style="margin-top: var(--space-lg);">اطلب عمل مخصص</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- ═══ Categories ═══ -->
+<section class="section" id="categories" style="background: var(--black-card);">
+    <div class="container">
+        <div class="section-header animate-on-scroll">
+            <h2>أقسامنا</h2>
+            <p>اختر القسم المناسب لمناسبتك واستعرض الأعمال المتاحة</p>
+        </div>
+
+        <div class="categories-grid">
+            {% for cat in categories %}
+            <a href="{{ url_for('main.category', slug=cat.slug) }}" class="category-tile animate-on-scroll">
+                <span class="category-tile__icon">{{ cat.icon }}</span>
+                <h3 class="category-tile__name">{{ cat.name }}</h3>
+                <p class="category-tile__desc">{{ cat.description }}</p>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ═══ How It Works ═══ -->
+<section class="section" id="how-it-works">
+    <div class="container">
+        <div class="section-header animate-on-scroll">
+            <h2>كيف <span class="gold-text">نعمل؟</span></h2>
+            <p>ثلاث خطوات بسيطة لتحصل على عملك الصوتي المخصص</p>
+        </div>
+
+        <div class="steps-grid">
+            <div class="step-card animate-on-scroll">
+                <div class="step-card__number">١</div>
+                <h3 class="step-card__title">اختر العمل أو النمط</h3>
+                <p class="step-card__desc">تصفح أعمالنا واختر النمط الذي يناسب ذوقك ومناسبتك</p>
+            </div>
+            <div class="step-card animate-on-scroll">
+                <div class="step-card__number">٢</div>
+                <h3 class="step-card__title">أضف الأسماء والتفاصيل</h3>
+                <p class="step-card__desc">أرسل لنا الأسماء وتفاصيل المناسبة لنخصص العمل لك</p>
+            </div>
+            <div class="step-card animate-on-scroll">
+                <div class="step-card__number">٣</div>
+                <h3 class="step-card__title">استلم عملك خلال وقت قصير</h3>
+                <p class="step-card__desc">نجهز عملك بأعلى جودة ونسلمه لك بأسرع وقت</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ CTA Banner ═══ -->
+<section class="section">
+    <div class="container">
+        <div class="cta-banner animate-on-scroll">
+            <h3>لم تجد ما تبحث عنه؟</h3>
+            <p>اطلب عملك المخصص بالكامل — نصمم لك عمل صوتي فريد حسب رغبتك</p>
+            <a href="{{ url_for('orders.new_order') }}" class="btn btn-primary btn-lg">اطلب عمل مخصص الآن</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

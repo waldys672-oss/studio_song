@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category.name }}{% endblock %}
+
+{% block content %}
+<!-- ═══ Category Hero ═══ -->
+<section class="category-hero">
+    <div class="container">
+        <h1>{{ category.icon }} {{ category.name }}</h1>
+        <p>{{ category.description }}</p>
+    </div>
+</section>
+
+<!-- ═══ Samples Grid ═══ -->
+<section class="section">
+    <div class="container">
+        <div class="samples-grid">
+            {% if samples %}
+                {% for sample in samples %}
+                <div class="sample-card animate-on-scroll">
+                    <div class="sample-card__media">
+                        {% if sample.media_type == 'youtube' %}
+                            <iframe
+                                src="https://www.youtube.com/embed/{{ sample.get_youtube_embed_id() }}"
+                                title="{{ sample.title }}"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen
+                                loading="lazy">
+                            </iframe>
+                        {% elif sample.media_type == 'upload' %}
+                            <video controls preload="metadata">
+                                <source src="{{ url_for('static', filename='uploads/' + sample.media_url) }}">
+                            </video>
+                        {% else %}
+                            <div class="sample-card__media-placeholder">🎵</div>
+                        {% endif %}
+                    </div>
+                    <div class="sample-card__body">
+                        <h3 class="sample-card__title">{{ sample.title }}</h3>
+                        <div class="sample-card__actions">
+                            <a href="{{ url_for('orders.new_order', sample_id=sample.id) }}" class="btn btn-primary btn-sm">اطلب مثل هذا العمل</a>
+                            <a href="{{ url_for('orders.new_order', sample_id=sample.id) }}" class="btn btn-secondary btn-sm">تعديل بالأسماء</a>
+                            <a href="https://wa.me/{{ whatsapp_number.replace('+', '') }}?text={{ ('أريد عمل مشابه لـ: ' + sample.title) | urlencode }}" target="_blank" class="btn btn-whatsapp btn-sm">تواصل واتساب</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="samples-empty">
+                    <div class="samples-empty__icon">🎵</div>
+                    <p>لا توجد أعمال في هذا القسم حالياً</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- CTA Banner -->
+        <div class="cta-banner animate-on-scroll" style="margin-top: var(--space-3xl);">
+            <h3>لم تجد ما تبحث عنه؟</h3>
+            <p>اطلب عمل مخصص بالكامل — نصمم لك عمل صوتي فريد حسب ذوقك</p>
+            <a href="{{ url_for('orders.new_order') }}" class="btn btn-primary btn-lg">اطلب عمل مخصص</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}حساب جديد{% endblock %}
+
+{% block content %}
+<section class="auth-page">
+    <div class="auth-card animate-on-scroll">
+        <h1>حساب <span class="gold-text">جديد</span></h1>
+        <p class="auth-subtitle">أنشئ حسابك لتتمكن من متابعة طلباتك</p>
+
+        <form method="POST" action="{{ url_for('auth.register') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="form-group">
+                <label class="form-label" for="name">الاسم</label>
+                <input type="text" class="form-control" id="name" name="name" required
+                       placeholder="الاسم الكامل">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="email">البريد الإلكتروني</label>
+                <input type="email" class="form-control" id="email" name="email" required
+                       placeholder="example@email.com" dir="ltr" style="text-align: left;">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="phone">رقم الجوال (اختياري)</label>
+                <input type="tel" class="form-control" id="phone" name="phone"
+                       placeholder="05XXXXXXXX" dir="ltr" style="text-align: left;">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="password">كلمة المرور</label>
+                    <input type="password" class="form-control" id="password" name="password" required
+                           placeholder="6 أحرف على الأقل" minlength="6">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="confirm_password">تأكيد كلمة المرور</label>
+                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required
+                           placeholder="أعد كتابة كلمة المرور">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg btn-block">إنشاء الحساب</button>
+        </form>
+
+        <p class="auth-footer">
+            لديك حساب مسبقاً؟ <a href="{{ url_for('auth.login') }}">سجل دخول</a>
+        </p>
+    </div>
+</section>
+{% endblock %}
