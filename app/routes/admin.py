@@ -7,7 +7,11 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from app.extensions import db
 from app.models import Sample, Category, Order, TrackingUpdate, User
+import cloudinary.uploader
 
+# When a user uploads a zaffat or sample:
+upload_result = cloudinary.uploader.upload(file_to_upload, resource_type="auto")
+file_url = upload_result['secure_url'] # This is the link you save in your database
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
 # أضف صيغ الصور هنا
