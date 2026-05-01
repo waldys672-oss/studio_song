@@ -1,4 +1,6 @@
 import os
+import time
+
 from functools import wraps
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
@@ -8,7 +10,8 @@ from app.models import Sample, Category, Order, TrackingUpdate, User
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
-ALLOWED_EXTENSIONS = {'mp3', 'wav', 'mp4', 'webm', 'ogg', 'm4a'}
+# أضف صيغ الصور هنا
+ALLOWED_EXTENSIONS = {'mp3', 'wav', 'mp4', 'webm', 'ogg', 'm4a', 'jpg', 'jpeg', 'png', 'webp'}
 
 
 def admin_required(f):
@@ -49,52 +52,47 @@ def dashboard():
 
 # ─── Samples Management ───
 
-@admin_bp.route('/samples')
-@admin_required
-def samples():
-    all_samples = Sample.query.order_by(Sample.created_at.desc()).all()
-    return render_template('admin/samples.html', samples=all_samples)
 
+def save_file(file):
+    """دالة مساعدة لحفظ الملفات بأسماء فريدة"""
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        filename = f"{int(time.time())}_{filename}"
+        file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+        return filename
+    return None
 
 @admin_bp.route('/samples/add', methods=['GET', 'POST'])
 @admin_required
 def add_sample():
     categories = Category.query.order_by(Category.sort_order).all()
-
     if request.method == 'POST':
         title = request.form.get('title', '').strip()
         category_id = request.form.get('category_id', type=int)
         media_type = request.form.get('media_type', 'youtube')
         is_featured = request.form.get('is_featured') == 'on'
+        
         media_url = ''
+        cover_image = None
 
         if media_type == 'youtube':
             media_url = request.form.get('youtube_url', '').strip()
-            if not media_url:
-                flash('رابط YouTube مطلوب', 'error')
-                return render_template('admin/sample_form.html', categories=categories)
         else:
-            file = request.files.get('media_file')
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                # Add timestamp to avoid collisions
-                import time
-                filename = f"{int(time.time())}_{filename}"
-                file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
-                media_url = filename
-            else:
-                flash('الملف غير صالح أو مفقود', 'error')
-                return render_template('admin/sample_form.html', categories=categories)
+            # حفظ ملف الميديا (صوت أو فيديو)
+            media_url = save_file(request.files.get('media_file'))
+            # حفظ صورة الغلاف
+            cover_image = save_file(request.files.get('cover_image'))
 
-        if not title or not category_id:
-            flash('العنوان والقسم مطلوبان', 'error')
-            return render_template('admin/sample_form.html', categories=categories)
+        if not title or not media_url:
+            flash('العنوان والملف/الرابط مطلوبان', 'error')
+            return redirect(request.url)
 
         sample = Sample(
             title=title,
             category_id=category_id,
             media_type=media_type,
             media_url=media_url,
+            cover_image=cover_image, # حفظ الصورة
             is_featured=is_featured
         )
         db.session.add(sample)
@@ -104,17 +102,12 @@ def add_sample():
 
     return render_template('admin/sample_form.html', categories=categories, sample=None)
 
-
 @admin_bp.route('/samples/<int:sample_id>/edit', methods=['GET', 'POST'])
 @admin_required
 def edit_sample(sample_id):
     sample = db.session.get(Sample, sample_id)
-    if not sample:
-        flash('العمل غير موجود', 'error')
-        return redirect(url_for('admin.samples'))
-
     categories = Category.query.order_by(Category.sort_order).all()
-
+    
     if request.method == 'POST':
         sample.title = request.form.get('title', '').strip()
         sample.category_id = request.form.get('category_id', type=int)
@@ -124,15 +117,17 @@ def edit_sample(sample_id):
         if media_type == 'youtube':
             sample.media_type = 'youtube'
             sample.media_url = request.form.get('youtube_url', '').strip()
-        elif request.files.get('media_file'):
-            file = request.files['media_file']
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                import time
-                filename = f"{int(time.time())}_{filename}"
-                file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+        else:
+            # تحديث ملف الميديا إذا رفع المستخدم ملفاً جديداً
+            new_media = save_file(request.files.get('media_file'))
+            if new_media:
+                sample.media_url = new_media
                 sample.media_type = 'upload'
-                sample.media_url = filename
+            
+            # تحديث صورة الغلاف إذا رفع المستخدم واحدة جديدة
+            new_cover = save_file(request.files.get('cover_image'))
+            if new_cover:
+                sample.cover_image = new_cover
 
         db.session.commit()
         flash('تم تحديث العمل بنجاح', 'success')
@@ -140,23 +135,28 @@ def edit_sample(sample_id):
 
     return render_template('admin/sample_form.html', categories=categories, sample=sample)
 
-
 @admin_bp.route('/samples/<int:sample_id>/delete', methods=['POST'])
 @admin_required
 def delete_sample(sample_id):
     sample = db.session.get(Sample, sample_id)
     if sample:
-        # Delete uploaded file if exists
-        if sample.media_type == 'upload' and sample.media_url:
-            filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], sample.media_url)
-            if os.path.exists(filepath):
-                os.remove(filepath)
+        # حذف الملفات من السيرفر لتوفير المساحة
+        for filename in [sample.media_url, sample.cover_image]:
+            if filename and sample.media_type == 'upload':
+                filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+        
         db.session.delete(sample)
         db.session.commit()
         flash('تم حذف العمل', 'success')
     return redirect(url_for('admin.samples'))
-
-
+@admin_bp.route('/samples')
+@admin_required
+def samples():
+    """دالة عرض جميع الأعمال في لوحة التحكم"""
+    all_samples = Sample.query.order_by(Sample.created_at.desc()).all()
+    return render_template('admin/samples.html', samples=all_samples)
 # ─── Orders Management ───
 
 @admin_bp.route('/orders')

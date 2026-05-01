@@ -5,29 +5,31 @@
 {% block content %}
 <section class="auth-page">
     <div class="auth-card animate-on-scroll">
-        <h1>أهلاً بعودتك</h1>
+        <h1><i class="fas fa-sign-in-alt" style="color: var(--accent); font-size: 0.8em;"></i> أهلاً بعودتك</h1>
         <p class="auth-subtitle">سجل دخولك لمتابعة طلباتك</p>
 
         <form method="POST" action="{{ url_for('auth.login') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <div class="form-group">
-                <label class="form-label" for="email">البريد الإلكتروني</label>
+                <label class="form-label" for="email"><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
                 <input type="email" class="form-control" id="email" name="email" required
                        placeholder="example@email.com" dir="ltr" style="text-align: left;">
             </div>
 
             <div class="form-group">
-                <label class="form-label" for="password">كلمة المرور</label>
+                <label class="form-label" for="password"><i class="fas fa-lock"></i> كلمة المرور</label>
                 <input type="password" class="form-control" id="password" name="password" required
                        placeholder="••••••••">
             </div>
 
-            <button type="submit" class="btn btn-primary btn-lg btn-block">تسجيل الدخول</button>
+            <button type="submit" class="btn btn-primary btn-lg btn-block">
+                <i class="fas fa-arrow-right-to-bracket"></i> تسجيل الدخول
+            </button>
         </form>
 
         <p class="auth-footer">
-            ليس لديك حساب؟ <a href="{{ url_for('auth.register') }}">أنشئ حساب جديد</a>
+            ليس لديك حساب؟ <a href="{{ url_for('auth.register') }}"><i class="fas fa-user-plus"></i> أنشئ حساب جديد</a>
         </p>
     </div>
 </section>

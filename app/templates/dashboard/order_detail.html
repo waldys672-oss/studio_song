@@ -6,14 +6,18 @@
 <section class="dashboard-page">
     <div class="container">
         <div class="dashboard-header">
-            <h1>طلب <span class="gold-text">#{{ order.id }}</span></h1>
-            <span class="badge badge-{{ order.status_color }}" style="font-size: var(--fs-sm); padding: 0.5rem 1.2rem;">{{ order.status_label }}</span>
+            <h1><i class="fas fa-file-invoice"></i> طلب <span class="accent-text">#{{ order.id }}</span></h1>
+            <span class="badge badge-{{ order.status_color }}" style="font-size: var(--fs-sm); padding: 0.5rem 1.2rem;">
+                {% if order.status == 'new' %}<i class="fas fa-circle"></i>
+                {% elif order.status == 'in_progress' %}<i class="fas fa-spinner"></i>
+                {% else %}<i class="fas fa-check-circle"></i>{% endif %}
+                {{ order.status_label }}
+            </span>
         </div>
 
         <div class="order-detail">
-            <!-- Order Info -->
             <div class="order-info-card animate-on-scroll">
-                <h2>تفاصيل الطلب</h2>
+                <h2><i class="fas fa-info-circle"></i> تفاصيل الطلب</h2>
                 <div class="order-info-grid">
                     <div class="order-info-item">
                         <div class="order-info-item__label">الأسماء المطلوبة</div>
@@ -44,7 +48,7 @@
                 </div>
 
                 {% if order.details %}
-                <div style="margin-top: var(--space-xl); padding-top: var(--space-lg); border-top: 1px solid var(--black-border);">
+                <div style="margin-top: var(--space-xl); padding-top: var(--space-lg); border-top: 1px solid var(--bg-border);">
                     <div class="order-info-item">
                         <div class="order-info-item__label">تفاصيل إضافية</div>
                         <div class="order-info-item__value" style="margin-top: var(--space-sm); line-height: var(--lh-relaxed);">{{ order.details }}</div>
@@ -53,31 +57,36 @@
                 {% endif %}
             </div>
 
-            <!-- Tracking Timeline -->
             <div class="order-info-card animate-on-scroll">
-                <h2>متابعة الطلب</h2>
-                
+                <h2><i class="fas fa-route"></i> متابعة الطلب</h2>
                 {% if tracking %}
                 <div class="timeline">
                     {% for update in tracking %}
                     <div class="timeline-item timeline-item--{{ 'success' if update.status == 'delivered' else ('warning' if update.status == 'in_progress' else 'info') }}">
                         <div class="timeline-item__dot"></div>
-                        <div class="timeline-item__status">{{ update.status_label }}</div>
+                        <div class="timeline-item__status">
+                            {% if update.status == 'new' %}<i class="fas fa-circle"></i>
+                            {% elif update.status == 'in_progress' %}<i class="fas fa-cog fa-spin"></i>
+                            {% else %}<i class="fas fa-check-circle"></i>{% endif %}
+                            {{ update.status_label }}
+                        </div>
                         {% if update.note %}
                         <div class="timeline-item__note">{{ update.note }}</div>
                         {% endif %}
-                        <div class="timeline-item__date">{{ update.created_at.strftime('%Y/%m/%d - %H:%M') }}</div>
+                        <div class="timeline-item__date"><i class="far fa-clock"></i> {{ update.created_at.strftime('%Y/%m/%d - %H:%M') }}</div>
                     </div>
                     {% endfor %}
                 </div>
                 {% else %}
-                <p style="color: var(--white-muted); font-size: var(--fs-sm);">لا توجد تحديثات بعد</p>
+                <p style="color: var(--text-tertiary); font-size: var(--fs-sm);">لا توجد تحديثات بعد</p>
                 {% endif %}
             </div>
         </div>
 
         <div style="margin-top: var(--space-xl);">
-            <a href="{{ url_for('orders.dashboard') }}" class="btn btn-outline-light">← العودة لطلباتي</a>
+            <a href="{{ url_for('orders.dashboard') }}" class="btn btn-outline">
+                <i class="fas fa-arrow-right"></i> العودة لطلباتي
+            </a>
         </div>
     </div>
 </section>

@@ -32,10 +32,10 @@ def new_order():
             errors.append('الأسماء المطلوبة مطلوبة')
         if not occasion_type:
             errors.append('نوع المناسبة مطلوب')
-        if not work_type:
-            errors.append('نوع العمل مطلوب')
-        if not whatsapp_number:
-            errors.append('رقم الواتساب مطلوب')
+        # if not work_type:
+        #     errors.append('نوع العمل مطلوب')
+        # if not whatsapp_number:
+        #     errors.append('رقم الواتساب مطلوب')
 
         if errors:
             for error in errors:

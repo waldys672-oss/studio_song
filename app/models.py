@@ -3,7 +3,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from app.extensions import db
 
-
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
 
@@ -36,11 +35,26 @@ class Category(db.Model):
     description = db.Column(db.Text, nullable=True)
     icon = db.Column(db.String(50), nullable=True)
     sort_order = db.Column(db.Integer, default=0)
+    
+    # حقول الأقسام الفرعية الجديدة 👇
+    parent_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True)
+    
+    # العلاقة للحصول على الأقسام الفرعية من القسم الرئيسي
+    subcategories = db.relationship(
+        'Category', 
+        backref=db.backref('parent', remote_side=[id]), 
+        lazy='dynamic'
+    )
 
+    # ربط العينات بالقسم (سواء كان رئيسياً أو فرعياً)
     samples = db.relationship('Sample', backref='category', lazy='dynamic')
 
     def __repr__(self):
         return f'<Category {self.name}>'
+    
+    @property
+    def is_subcategory(self):
+        return self.parent_id is not None
 
 
 class Sample(db.Model):
@@ -48,14 +62,15 @@ class Sample(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
+    # يفضل ربط العينة بالقسم الفرعي مباشرة
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False)
-    media_type = db.Column(db.String(20), nullable=False, default='youtube')  # youtube | upload
-    media_url = db.Column(db.String(500), nullable=False)  # YouTube URL or uploaded file path
+    media_type = db.Column(db.String(20), nullable=False, default='youtube')
+    media_url = db.Column(db.String(500), nullable=False)
+    cover_image = db.Column(db.String(500), nullable=True) 
     is_featured = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def get_youtube_embed_id(self):
-        """Extract YouTube video ID from URL for embedding."""
         url = self.media_url
         if 'youtu.be/' in url:
             return url.split('youtu.be/')[-1].split('?')[0]
@@ -76,40 +91,39 @@ class Order(db.Model):
     __tablename__ = 'orders'
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # Null for guests
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     guest_name = db.Column(db.String(100), nullable=True)
     guest_phone = db.Column(db.String(20), nullable=True)
     names_requested = db.Column(db.String(300), nullable=False)
-    occasion_type = db.Column(db.String(100), nullable=False)
-    work_type = db.Column(db.String(50), nullable=False)  # زفة | شيلة | مقطع
+    
+    # ربط الطلب بالقسم الفرعي المختار مباشرة
+    subcategory_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True)
+    
+    occasion_type = db.Column(db.String(100), nullable=False) # يمكن استخدامه كاسم القسم المختار
+    work_type = db.Column(db.String(50), nullable=False)
     reference_sample_id = db.Column(db.Integer, db.ForeignKey('samples.id'), nullable=True)
     details = db.Column(db.Text, nullable=True)
     whatsapp_number = db.Column(db.String(20), nullable=False)
-    status = db.Column(db.String(20), default='new')  # new | in_progress | delivered
+    status = db.Column(db.String(20), default='new')
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
                            onupdate=lambda: datetime.now(timezone.utc))
 
     reference_sample = db.relationship('Sample', backref='orders')
+    # العلاقة للوصول لبيانات القسم من الطلب
+    category = db.relationship('Category', foreign_keys=[subcategory_id])
+    
     tracking_updates = db.relationship('TrackingUpdate', backref='order',
                                        lazy='dynamic', order_by='TrackingUpdate.created_at.desc()')
 
     @property
     def status_label(self):
-        labels = {
-            'new': 'جديد',
-            'in_progress': 'قيد التنفيذ',
-            'delivered': 'تم التسليم'
-        }
+        labels = {'new': 'جديد', 'in_progress': 'قيد التنفيذ', 'delivered': 'تم التسليم'}
         return labels.get(self.status, self.status)
 
     @property
     def status_color(self):
-        colors = {
-            'new': 'info',
-            'in_progress': 'warning',
-            'delivered': 'success'
-        }
+        colors = {'new': 'info', 'in_progress': 'warning', 'delivered': 'success'}
         return colors.get(self.status, 'info')
 
     def __repr__(self):
@@ -127,11 +141,7 @@ class TrackingUpdate(db.Model):
 
     @property
     def status_label(self):
-        labels = {
-            'new': 'جديد',
-            'in_progress': 'قيد التنفيذ',
-            'delivered': 'تم التسليم'
-        }
+        labels = {'new': 'جديد', 'in_progress': 'قيد التنفيذ', 'delivered': 'تم التسليم'}
         return labels.get(self.status, self.status)
 
     def __repr__(self):

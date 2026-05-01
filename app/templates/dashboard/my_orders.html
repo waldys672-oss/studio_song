@@ -6,8 +6,10 @@
 <section class="dashboard-page">
     <div class="container">
         <div class="dashboard-header">
-            <h1>طلباتي</h1>
-            <a href="{{ url_for('orders.new_order') }}" class="btn btn-primary">طلب جديد</a>
+            <h1><i class="fas fa-clipboard-list"></i> طلباتي</h1>
+            <a href="{{ url_for('orders.new_order') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> طلب جديد
+            </a>
         </div>
 
         <div class="orders-grid">
@@ -15,8 +17,13 @@
                 {% for order in orders %}
                 <a href="{{ url_for('orders.order_detail', order_id=order.id) }}" class="order-card animate-on-scroll">
                     <div class="order-card__header">
-                        <span class="order-card__id">طلب #{{ order.id }}</span>
-                        <span class="badge badge-{{ order.status_color }}">{{ order.status_label }}</span>
+                        <span class="order-card__id"><i class="fas fa-hashtag"></i> طلب #{{ order.id }}</span>
+                        <span class="badge badge-{{ order.status_color }}">
+                            {% if order.status == 'new' %}<i class="fas fa-circle"></i>
+                            {% elif order.status == 'in_progress' %}<i class="fas fa-spinner"></i>
+                            {% else %}<i class="fas fa-check-circle"></i>{% endif %}
+                            {{ order.status_label }}
+                        </span>
                     </div>
                     <div class="order-card__body">
                         <div class="order-card__field">
@@ -40,9 +47,13 @@
                 {% endfor %}
             {% else %}
                 <div class="samples-empty">
-                    <div class="samples-empty__icon">📋</div>
+                    <div class="samples-empty__icon">
+                        <i class="fas fa-inbox"></i>
+                    </div>
                     <p>لا توجد طلبات حالياً</p>
-                    <a href="{{ url_for('orders.new_order') }}" class="btn btn-primary" style="margin-top: var(--space-lg);">اطلب الآن</a>
+                    <a href="{{ url_for('orders.new_order') }}" class="btn btn-primary" style="margin-top: var(--space-lg);">
+                        <i class="fas fa-plus"></i> اطلب الآن
+                    </a>
                 </div>
             {% endif %}
         </div>

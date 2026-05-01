@@ -6,8 +6,8 @@
 <section class="admin-page">
     <div class="container">
         <div class="dashboard-header">
-            <h1>إدارة <span class="gold-text">الأعمال</span></h1>
-            <a href="{{ url_for('admin.add_sample') }}" class="btn btn-primary">+ إضافة عمل</a>
+            <h1><i class="fas fa-compact-disc"></i> إدارة <span class="accent-text">الأعمال</span></h1>
+            <a href="{{ url_for('admin.add_sample') }}" class="btn btn-primary"><i class="fas fa-plus"></i> إضافة عمل</a>
         </div>
 
         <div class="admin-table-wrapper animate-on-scroll">
@@ -30,16 +30,28 @@
                         <td>{{ sample.id }}</td>
                         <td>{{ sample.title }}</td>
                         <td>{{ sample.category.name }}</td>
-                        <td>{{ 'يوتيوب' if sample.media_type == 'youtube' else 'ملف مرفوع' }}</td>
-                        <td>{{ '⭐' if sample.is_featured else '—' }}</td>
+                        <td>
+                            {% if sample.media_type == 'youtube' %}
+                                <i class="fab fa-youtube" style="color: #FF0000;"></i> يوتيوب
+                            {% else %}
+                                <i class="fas fa-file-audio" style="color: var(--accent);"></i> ملف مرفوع
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if sample.is_featured %}
+                                <i class="fas fa-star" style="color: var(--accent);"></i>
+                            {% else %}
+                                <i class="far fa-star" style="color: var(--text-dim);"></i>
+                            {% endif %}
+                        </td>
                         <td>{{ sample.created_at.strftime('%Y/%m/%d') }}</td>
                         <td>
                             <div class="admin-table-actions">
-                                <a href="{{ url_for('admin.edit_sample', sample_id=sample.id) }}" class="btn btn-sm btn-secondary">تعديل</a>
+                                <a href="{{ url_for('admin.edit_sample', sample_id=sample.id) }}" class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i> تعديل</a>
                                 <form method="POST" action="{{ url_for('admin.delete_sample', sample_id=sample.id) }}" style="display: inline;"
                                       onsubmit="return confirm('هل أنت متأكد من حذف هذا العمل؟')">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <button type="submit" class="btn btn-sm btn-outline-light" style="color: var(--error); border-color: var(--error);">حذف</button>
+                                    <button type="submit" class="btn btn-sm btn-outline" style="color: var(--error); border-color: var(--error);"><i class="fas fa-trash-alt"></i> حذف</button>
                                 </form>
                             </div>
                         </td>
@@ -49,9 +61,9 @@
             </table>
             {% else %}
             <div class="samples-empty">
-                <div class="samples-empty__icon">🎵</div>
+                <div class="samples-empty__icon"><i class="fas fa-compact-disc"></i></div>
                 <p>لا توجد أعمال بعد</p>
-                <a href="{{ url_for('admin.add_sample') }}" class="btn btn-primary" style="margin-top: var(--space-lg);">أضف أول عمل</a>
+                <a href="{{ url_for('admin.add_sample') }}" class="btn btn-primary" style="margin-top: var(--space-lg);"><i class="fas fa-plus"></i> أضف أول عمل</a>
             </div>
             {% endif %}
         </div>

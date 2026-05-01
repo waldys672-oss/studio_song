@@ -1,0 +1,22 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+venv/
+env/
+.env
+
+# Database (Local SQLite)
+instance/
+*.db
+*.sqbpro
+
+# Uploaded Studio Media (You don't want local test files on GitHub)
+app/static/uploads/*
+!app/static/uploads/.gitkeep
+
+# Operating System files
+.DS_Store
+Thumbs.db

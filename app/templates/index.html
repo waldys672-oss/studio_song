@@ -1,4 +1,6 @@
+
 {% extends "base.html" %}
+{% from "macros.html" import sample_card, section_header, cta_banner %}
 
 {% block title %}الرئيسية{% endblock %}
 
@@ -13,16 +15,22 @@
         <div class="hero-particle"></div>
         <div class="hero-particle"></div>
     </div>
+    <div class="hero-ring"></div>
+    <div class="hero-ring-inner"></div>
 
     <div class="hero-content animate-on-scroll">
-        <h1>اطلب <span class="gold-text">زفتك</span> أو <span class="gold-text">شيلتك</span> الخاصة باسمك</h1>
+        <h1>اطلب <span class="accent-text">زفتك</span> أو <span class="accent-text">شيلتك</span> الخاصة باسمك</h1>
         <p class="hero-subtext">
-            نصمم لك أعمال صوتية مخصصة بأسمائكم وتفاصيل مناسبتكم — زفات أفراح، شيلات حماسية، ومقاطع صوتية لجميع المناسبات الخليجية
+            نصمم لك أعمال صوتية مخصصة بأسمائكم وتفاصيل مناسبتكم — زفات أفراح، شيلات حماسية، ومقاطع صوتية لجميع المناسبات الخليجية وبصوت فنانك المفضل.
         </p>
         <div class="hero-buttons">
-            <a href="#featured" class="btn btn-primary btn-lg">تصفح الأعمال</a>
-            <a href="{{ url_for('orders.new_order') }}" class="btn btn-secondary btn-lg">اطلب الآن</a>
-            <a href="{{ url_for('orders.new_order') }}" class="btn btn-outline-light btn-lg">اطلب عمل مخصص</a>
+            <a href="#featured" class="btn btn-primary btn-lg">
+                <i class="fas fa-play-circle"></i> تصفح الأعمال
+            </a>
+
+            <a href="{{ url_for('orders.new_order') }}" class="btn btn-ghost btn-lg">
+                <i class="fas fa-pen-fancy"></i> اطلب عمل مخصص
+            </a>
         </div>
     </div>
 </section>
@@ -30,47 +38,48 @@
 <!-- ═══ Featured Works ═══ -->
 <section class="section" id="featured">
     <div class="container">
-        <div class="section-header animate-on-scroll">
-            <h2>أعمالنا <span class="gold-text">المميزة</span></h2>
-            <p>استمع إلى نماذج من أعمالنا واختر ما يناسب ذوقك ومناسبتك</p>
+        {{ section_header("أعمالنا المميزة", "استمع إلى نماذج من أعمالنا واختر ما يناسب ذوقك ومناسبتك", "المميزة") }}
+
+        {% if featured_samples %}
+        <!-- Filter Controls -->
+        <div class="main-filter-row animate-on-scroll" style="display: flex; gap: var(--space-sm); justify-content: center; margin-bottom: var(--space-md); flex-wrap: wrap;">
+            <button class="filter-btn active btn btn-sm btn-primary" data-filter="all">الكل</button>
+            {% for cat in categories %}
+                {% if not cat.parent_id %}
+                <button class="filter-btn btn btn-sm btn-ghost main-cat-btn" data-filter="{{ cat.slug }}" data-target-sub="sub-{{ cat.slug }}">
+                    {{ cat.name }}
+                </button>
+                {% endif %}
+            {% endfor %}
         </div>
 
+        <div class="sub-filter-container animate-on-scroll" style="margin-bottom: var(--space-2xl);">
+            {% for cat in categories %}
+                {% if not cat.parent_id and cat.subcategories.count() > 0 %}
+                <div class="sub-filter-row" id="sub-{{ cat.slug }}" style="display: none; flex-wrap: wrap; gap: var(--space-sm); justify-content: center; background: var(--bg-elevated); padding: var(--space-md); border-radius: var(--radius-lg); border: 1px solid var(--bg-border);">
+                    {% for sub in cat.subcategories %}
+                    <button class="sub-filter-btn btn btn-sm btn-ghost" data-filter="{{ sub.slug }}">
+                        {{ sub.name }}
+                    </button>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Samples Grid using Macro -->
         <div class="samples-grid">
             {% if featured_samples %}
                 {% for sample in featured_samples %}
-                <div class="sample-card animate-on-scroll">
-                    <div class="sample-card__media">
-                        {% if sample.media_type == 'youtube' %}
-                            <iframe
-                                src="https://www.youtube.com/embed/{{ sample.get_youtube_embed_id() }}"
-                                title="{{ sample.title }}"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowfullscreen
-                                loading="lazy">
-                            </iframe>
-                        {% elif sample.media_type == 'upload' %}
-                            <video controls preload="metadata">
-                                <source src="{{ url_for('static', filename='uploads/' + sample.media_url) }}">
-                            </video>
-                        {% else %}
-                            <div class="sample-card__media-placeholder">🎵</div>
-                        {% endif %}
-                    </div>
-                    <div class="sample-card__body">
-                        <h3 class="sample-card__title">{{ sample.title }}</h3>
-                        <div class="sample-card__actions">
-                            <a href="{{ url_for('orders.new_order', sample_id=sample.id) }}" class="btn btn-primary btn-sm">اطلب مثل هذا العمل</a>
-                            <a href="{{ url_for('orders.new_order', sample_id=sample.id) }}" class="btn btn-secondary btn-sm">تعديل بالأسماء</a>
-                            <a href="https://wa.me/{{ whatsapp_number.replace('+', '') }}?text={{ ('أريد عمل مشابه لـ: ' + sample.title) | urlencode }}" target="_blank" class="btn btn-whatsapp btn-sm">واتساب</a>
-                        </div>
-                    </div>
-                </div>
+                    {{ sample_card(sample, whatsapp_number) }}
                 {% endfor %}
             {% else %}
                 <div class="samples-empty">
-                    <div class="samples-empty__icon">🎵</div>
+                    <div class="samples-empty__icon">
+                        <i class="fas fa-compact-disc fa-spin"></i>
+                    </div>
                     <p>سيتم إضافة الأعمال قريباً — تابعونا!</p>
-                    <a href="{{ url_for('orders.new_order') }}" class="btn btn-primary" style="margin-top: var(--space-lg);">اطلب عمل مخصص</a>
                 </div>
             {% endif %}
         </div>
@@ -78,17 +87,16 @@
 </section>
 
 <!-- ═══ Categories ═══ -->
-<section class="section" id="categories" style="background: var(--black-card);">
+<section class="section section-alt" id="categories">
     <div class="container">
-        <div class="section-header animate-on-scroll">
-            <h2>أقسامنا</h2>
-            <p>اختر القسم المناسب لمناسبتك واستعرض الأعمال المتاحة</p>
-        </div>
+        {{ section_header("أقسامنا", "اختر القسم المناسب لمناسبتك واستعرض الأعمال المتاحة") }}
 
         <div class="categories-grid">
             {% for cat in categories %}
             <a href="{{ url_for('main.category', slug=cat.slug) }}" class="category-tile animate-on-scroll">
-                <span class="category-tile__icon">{{ cat.icon }}</span>
+                <div class="category-tile__icon">
+                    <i class="{{ cat.icon }}"></i>
+                </div>
                 <h3 class="category-tile__name">{{ cat.name }}</h3>
                 <p class="category-tile__desc">{{ cat.description }}</p>
             </a>
@@ -100,39 +108,37 @@
 <!-- ═══ How It Works ═══ -->
 <section class="section" id="how-it-works">
     <div class="container">
-        <div class="section-header animate-on-scroll">
-            <h2>كيف <span class="gold-text">نعمل؟</span></h2>
-            <p>ثلاث خطوات بسيطة لتحصل على عملك الصوتي المخصص</p>
-        </div>
+        {{ section_header("كيف نعمل؟", "ثلاث خطوات بسيطة لتحصل على عملك الصوتي المخصص", "نعمل؟") }}
 
         <div class="steps-grid">
             <div class="step-card animate-on-scroll">
                 <div class="step-card__number">١</div>
-                <h3 class="step-card__title">اختر العمل أو النمط</h3>
+                <h3 class="step-card__title"><i class="fas fa-headphones text-accent" style="font-size: 0.8em;"></i> اختر العمل أو النمط</h3>
                 <p class="step-card__desc">تصفح أعمالنا واختر النمط الذي يناسب ذوقك ومناسبتك</p>
             </div>
             <div class="step-card animate-on-scroll">
                 <div class="step-card__number">٢</div>
-                <h3 class="step-card__title">أضف الأسماء والتفاصيل</h3>
+                <h3 class="step-card__title"><i class="fas fa-pen text-accent" style="font-size: 0.8em;"></i> أضف الأسماء والتفاصيل</h3>
                 <p class="step-card__desc">أرسل لنا الأسماء وتفاصيل المناسبة لنخصص العمل لك</p>
             </div>
             <div class="step-card animate-on-scroll">
                 <div class="step-card__number">٣</div>
-                <h3 class="step-card__title">استلم عملك خلال وقت قصير</h3>
+                <h3 class="step-card__title"><i class="fas fa-check-circle text-accent" style="font-size: 0.8em;"></i> استلم عملك خلال وقت قصير</h3>
                 <p class="step-card__desc">نجهز عملك بأعلى جودة ونسلمه لك بأسرع وقت</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- ═══ CTA Banner ═══ -->
+<!-- ═══ CTA Banner using Macro ═══ -->
 <section class="section">
     <div class="container">
-        <div class="cta-banner animate-on-scroll">
-            <h3>لم تجد ما تبحث عنه؟</h3>
-            <p>اطلب عملك المخصص بالكامل — نصمم لك عمل صوتي فريد حسب رغبتك</p>
-            <a href="{{ url_for('orders.new_order') }}" class="btn btn-primary btn-lg">اطلب عمل مخصص الآن</a>
-        </div>
+        {{ cta_banner(
+            '<i class="fas fa-sparkles" style="color: var(--accent);"></i> لم تجد ما تبحث عنه؟',
+            "اطلب عملك المخصص بالكامل — نصمم لك عمل صوتي فريد حسب رغبتك",
+            "اطلب عمل مخصص الآن",
+            url_for('orders.new_order')
+        ) }}
     </div>
 </section>
 {% endblock %}

@@ -58,11 +58,11 @@ def _seed_data():
 
     if Category.query.first() is None:
         categories = [
-            Category(name='زفات وأفراح', slug='zaffat', description='زفات عرس مميزة لإضفاء لمسة خاصة على ليلة العمر', icon='💍', sort_order=1),
-            Category(name='مناسبات اجتماعية', slug='social', description='أعمال صوتية لحفلات التخرج والخطوبة والنجاح', icon='🎓', sort_order=2),
-            Category(name='مواليد وأطفال', slug='newborn', description='أناشيد وأعمال ترحيبية بالمواليد الجدد', icon='👶', sort_order=3),
-            Category(name='أعياد ومناسبات شخصية', slug='celebrations', description='أعمال صوتية مخصصة للأعياد والمناسبات الخاصة', icon='🎉', sort_order=4),
-            Category(name='شيلات مخصصة', slug='sheilat', description='شيلات حماسية مخصصة بالأسماء والتفاصيل', icon='🎵', sort_order=5),
+            Category(name='زفات وأفراح', slug='zaffat', description='زفات عرس مميزة لإضفاء لمسة خاصة على ليلة العمر', icon='fas fa-ring', sort_order=1),
+            Category(name='مناسبات اجتماعية', slug='social', description='أعمال صوتية لحفلات التخرج والخطوبة والنجاح', icon='fas fa-graduation-cap', sort_order=2),
+            Category(name='مواليد وأطفال', slug='newborn', description='أناشيد وأعمال ترحيبية بالمواليد الجدد', icon='fas fa-baby', sort_order=3),
+            Category(name='أعياد ومناسبات شخصية', slug='celebrations', description='أعمال صوتية مخصصة للأعياد والمناسبات الخاصة', icon='fas fa-gift', sort_order=4),
+            Category(name='شيلات مخصصة', slug='sheilat', description='شيلات حماسية مخصصة بالأسماء والتفاصيل', icon='fas fa-music', sort_order=5),
         ]
         db.session.add_all(categories)
         db.session.commit()

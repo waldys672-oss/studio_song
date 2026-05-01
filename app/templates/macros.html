@@ -1,0 +1,122 @@
+
+
+{% macro back_to_home(text="العودة إلى الرئيسية", icon="fas fa-home", margin_top="var(--space-xl)") %}
+<!-- ═══ Reusable Back to Home Component ═══ -->
+<div class="section-footer animate-on-scroll" style="text-align: center; padding: {{ margin_top }} 0;">
+    <a href="{{ url_for('main.index') }}" class="btn btn-ghost">
+        <i class="{{ icon }}" style="margin-left: 8px;"></i> {{ text }}
+    </a>
+</div>
+{% endmacro %}
+
+
+
+{% macro section_header(title, subtitle, accent_word="") %}
+<div class="section-header animate-on-scroll">
+    <h2>
+        {% if accent_word in title %}
+            {{ title.replace(accent_word, '<span class="accent-text">' ~ accent_word ~ '</span>') | safe }}
+        {% else %}
+            {{ title }}
+        {% endif %}
+    </h2>
+    <p>{{ subtitle }}</p>
+</div>
+{% endmacro %}
+
+
+
+
+{% macro cta_banner(title, subtitle, btn_text, btn_link, is_whatsapp=false, whatsapp_num="") %}
+<div class="cta-banner animate-on-scroll">
+    <h3>{{ title | safe }}</h3>
+    <p>{{ subtitle }}</p>
+    <div style="display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap;">
+        <a href="{{ btn_link }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-paper-plane"></i> {{ btn_text }}
+        </a>
+        {% if is_whatsapp %}
+        <a href="https://wa.me/{{ whatsapp_num.replace('+', '') }}" target="_blank" class="btn btn-whatsapp btn-lg">
+            <i class="fab fa-whatsapp"></i> تواصل واتساب
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}
+
+
+
+
+
+
+
+{# 1. The Main Category Navigation Map (No Refresh) #}
+{% macro category_nav_map(all_categories, active_category_slug) %}
+<div class="category-nav-map animate-on-scroll" style="margin-bottom: var(--space-lg);">
+    <div class="section-header" style="text-align: center; margin-bottom: var(--space-md);">
+        
+    </div>
+
+</div>
+{% endmacro %}
+
+
+{% macro category_filter(subcategories) %}
+{% if subcategories %}
+<div class="sub-filter-container animate-on-scroll" style="margin-bottom: var(--space-xl);">
+
+    <div class="sub-filter-row" style="display: flex; flex-wrap: wrap; gap: var(--space-sm); justify-content: center; background: var(--bg-elevated); padding: var(--space-md); border-radius: var(--radius-lg); border: 1px solid var(--bg-border);">
+        
+        {% for sub in subcategories %}
+        <button type="button" class="sub-filter-btn btn btn-sm btn-ghost" data-filter="{{ sub.slug }}">
+            {{ sub.name }}
+        </button>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endmacro %}
+
+
+
+{# 3. The Sample Card #}
+{% macro sample_card(sample, whatsapp_number) %}
+<div class="sample-card animate-on-scroll sample-item" 
+     data-category="{{ sample.category.slug }}"
+     data-parent="{{ sample.category.parent.slug if sample.category.parent_id else sample.category.slug }}">
+    
+    {# Move the image to the background of this DIV #}
+    <div class="sample-card__media {% if sample.media_type == 'upload' %}media-upload-bg{% endif %}"
+         style="{% if sample.media_type == 'upload' and sample.cover_image %}background-image: url('{{ url_for('static', filename='uploads/' + sample.cover_image) }}');{% endif %}">
+        
+        {% if sample.media_type == 'youtube' %}
+            <iframe src="https://www.youtube.com/embed/{{ sample.get_youtube_embed_id() }}"
+                    title="{{ sample.title }}" allowfullscreen loading="lazy"></iframe>
+        {% elif sample.media_type == 'upload' %}
+            <div class="custom-player-wrapper" onclick="togglePlay(this)">
+                {# Keep the video tag for audio, but make it transparent #}
+                <video class="audio-element" preload="none">
+                    <source src="{{ url_for('static', filename='uploads/' + sample.media_url) }}">
+                </video>
+                <div class="play-overlay">
+                    <div class="play-button-yt">
+                        <i class="fas fa-play"></i>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="sample-card__body">
+        <h3 class="sample-card__title">{{ sample.title }}</h3>
+        <div class="sample-card__actions">
+            <a href="{{ url_for('orders.new_order', sample_id=sample.id) }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-cart-plus"></i> اطلب مثل هذا
+            </a>
+<a href="https://wa.me/0558262881?text={{ ('أريد عمل مشابه لـ: ' ~ sample.title ~ ' ' ~ sample.category.name ~ ' ' ~ sample.media_url) | urlencode }}" target="_blank" class="btn btn-whatsapp btn-sm">
+    <i class="fab fa-whatsapp"></i> اطلب الان 
+</a>
+        </div>
+    </div>
+</div>
+{% endmacro %}

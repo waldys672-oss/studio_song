@@ -6,15 +6,22 @@
 <section class="admin-page">
     <div class="container">
         <div class="dashboard-header">
-            <h1>إدارة <span class="gold-text">الطلبات</span></h1>
+            <h1><i class="fas fa-clipboard-list"></i> إدارة <span class="accent-text">الطلبات</span></h1>
         </div>
 
-        <!-- Filters -->
         <div class="admin-filters">
-            <a href="{{ url_for('admin.orders') }}" class="filter-btn {% if not status_filter %}active{% endif %}">الكل</a>
-            <a href="{{ url_for('admin.orders', status='new') }}" class="filter-btn {% if status_filter == 'new' %}active{% endif %}">جديد</a>
-            <a href="{{ url_for('admin.orders', status='in_progress') }}" class="filter-btn {% if status_filter == 'in_progress' %}active{% endif %}">قيد التنفيذ</a>
-            <a href="{{ url_for('admin.orders', status='delivered') }}" class="filter-btn {% if status_filter == 'delivered' %}active{% endif %}">تم التسليم</a>
+            <a href="{{ url_for('admin.orders') }}" class="filter-btn {% if not status_filter %}active{% endif %}">
+                <i class="fas fa-list"></i> الكل
+            </a>
+            <a href="{{ url_for('admin.orders', status='new') }}" class="filter-btn {% if status_filter == 'new' %}active{% endif %}">
+                <i class="fas fa-circle-dot"></i> جديد
+            </a>
+            <a href="{{ url_for('admin.orders', status='in_progress') }}" class="filter-btn {% if status_filter == 'in_progress' %}active{% endif %}">
+                <i class="fas fa-spinner"></i> قيد التنفيذ
+            </a>
+            <a href="{{ url_for('admin.orders', status='delivered') }}" class="filter-btn {% if status_filter == 'delivered' %}active{% endif %}">
+                <i class="fas fa-check-double"></i> تم التسليم
+            </a>
         </div>
 
         <div class="admin-table-wrapper animate-on-scroll">
@@ -37,19 +44,16 @@
                     <tr>
                         <td>{{ order.id }}</td>
                         <td>
-                            {% if order.user %}
-                                {{ order.user.name }}
-                            {% else %}
-                                {{ order.guest_name or 'ضيف' }}
-                            {% endif %}
+                            <i class="fas fa-user" style="color: var(--text-dim); font-size: 0.8em;"></i>
+                            {% if order.user %}{{ order.user.name }}{% else %}{{ order.guest_name or 'ضيف' }}{% endif %}
                         </td>
                         <td>{{ order.names_requested }}</td>
                         <td>{{ order.occasion_type }}</td>
                         <td>{{ order.work_type }}</td>
-                        <td><span class="badge badge-{{ order.status_color }}">{{ order.status_label }}</span></td>
+                        <td><span class="badge badge-{{ order.status_color }}"><i class="fas fa-circle" style="font-size: 0.5em;"></i> {{ order.status_label }}</span></td>
                         <td>{{ order.created_at.strftime('%Y/%m/%d') }}</td>
                         <td>
-                            <a href="{{ url_for('admin.order_detail', order_id=order.id) }}" class="btn btn-sm btn-secondary">إدارة</a>
+                            <a href="{{ url_for('admin.order_detail', order_id=order.id) }}" class="btn btn-sm btn-secondary"><i class="fas fa-cog"></i> إدارة</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -57,7 +61,7 @@
             </table>
             {% else %}
             <div class="samples-empty">
-                <div class="samples-empty__icon">📋</div>
+                <div class="samples-empty__icon"><i class="fas fa-inbox"></i></div>
                 <p>لا توجد طلبات</p>
             </div>
             {% endif %}

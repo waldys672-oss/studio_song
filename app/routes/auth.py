@@ -50,9 +50,10 @@ def register():
             errors.append('كلمة المرور يجب أن تكون 6 أحرف على الأقل')
         if password != confirm_password:
             errors.append('كلمة المرور غير متطابقة')
+        if not phone:
+            errors.append('يجب ادخال رقم الواتس اب')
         if User.query.filter_by(email=email).first():
             errors.append('البريد الإلكتروني مسجل مسبقاً')
-
         if errors:
             for error in errors:
                 flash(error, 'error')

@@ -1,9 +1,10 @@
 /* ═══════════════════════════════════════
-   سمو — Base Styles
-   Reset, RTL, Typography
+   سمو — Base Styles v2
+   Reset, RTL, Typography, Dark Mode
    ═══════════════════════════════════════ */
 
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap');
+/* تأكد أن المشغل المخصص يأخذ مساحة الكارت بالكامل */
 
 /* ─── Reset ─── */
 *,
@@ -25,35 +26,45 @@ body {
     font-size: var(--fs-base);
     font-weight: var(--fw-regular);
     line-height: var(--lh-normal);
-    color: var(--white);
-    background-color: var(--black);
+    color: var(--text-primary);
+    background-color: var(--bg-base);
     direction: rtl;
     text-align: right;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
+    /* Subtle base texture */
+    background-image:
+        radial-gradient(ellipse at 20% 50%, rgba(139, 92, 246, 0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(232, 168, 56, 0.03) 0%, transparent 50%);
+    background-attachment: fixed;
 }
+
+/* Font Awesome v5 class compatibility with v6 assets */
+.fas { font-family: "Font Awesome 6 Free"; font-weight: 900; }
+.far { font-family: "Font Awesome 6 Free"; font-weight: 400; }
+.fab { font-family: "Font Awesome 6 Brands"; font-weight: 400; }
 
 /* ─── Selection ─── */
 ::selection {
-    background: var(--gold);
-    color: var(--black);
+    background: var(--accent);
+    color: var(--bg-base);
 }
 
 ::-moz-selection {
-    background: var(--gold);
-    color: var(--black);
+    background: var(--accent);
+    color: var(--bg-base);
 }
 
 /* ─── Links ─── */
 a {
-    color: var(--gold);
+    color: var(--accent);
     text-decoration: none;
     transition: color var(--transition-fast);
 }
 
 a:hover {
-    color: var(--gold-light);
+    color: var(--accent-light);
 }
 
 /* ─── Images ─── */
@@ -73,7 +84,7 @@ ul, ol {
 h1, h2, h3, h4, h5, h6 {
     font-weight: var(--fw-bold);
     line-height: var(--lh-tight);
-    color: var(--white);
+    color: var(--text-primary);
 }
 
 h1 { font-size: var(--fs-3xl); }
@@ -85,7 +96,7 @@ h5 { font-size: var(--fs-md); }
 /* ─── Paragraph ─── */
 p {
     margin-bottom: var(--space-md);
-    color: var(--white-70);
+    color: var(--text-secondary);
 }
 
 /* ─── Container ─── */
@@ -116,44 +127,46 @@ p {
 .section-header h2::after {
     content: '';
     position: absolute;
-    bottom: -10px;
+    bottom: -12px;
     left: 50%;
     transform: translateX(-50%);
     width: 60px;
     height: 3px;
-    background: var(--gradient-gold);
+    background: var(--gradient-accent-vivid);
     border-radius: var(--radius-full);
+    box-shadow: 0 0 12px var(--accent-glow);
 }
 
 .section-header p {
     font-size: var(--fs-md);
-    color: var(--white-muted);
+    color: var(--text-tertiary);
     max-width: 600px;
     margin: var(--space-lg) auto 0;
 }
 
 /* ─── Scrollbar ─── */
 ::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--black);
+    background: var(--bg-base);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--black-border);
+    background: var(--bg-border);
     border-radius: var(--radius-full);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--gold-dark);
+    background: var(--accent-dark);
 }
 
 /* ─── Focus ─── */
 :focus-visible {
-    outline: 2px solid var(--gold);
-    outline-offset: 2px;
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: var(--radius-sm);
 }
 
 /* ─── Form Elements ─── */
@@ -174,11 +187,11 @@ button {
 
 /* ─── Utility Classes ─── */
 .text-center { text-align: center; }
-.text-gold { color: var(--gold); }
-.text-muted { color: var(--white-muted); }
+.text-accent { color: var(--accent); }
+.text-muted { color: var(--text-tertiary); }
 
-.gold-text {
-    background: var(--gradient-gold-text);
+.accent-text {
+    background: var(--gradient-accent-text);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -218,9 +231,13 @@ button {
     100% { background-position: 200% center; }
 }
 
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow: 0 0 5px var(--accent-glow), 0 0 20px rgba(232, 168, 56, 0.1);
+    }
+    50% {
+        box-shadow: 0 0 15px var(--accent-glow), 0 0 40px rgba(232, 168, 56, 0.2);
+    }
 }
 
 @keyframes float {
@@ -228,10 +245,20 @@ button {
     50% { transform: translateY(-10px); }
 }
 
+@keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes wa-pulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 4px 20px var(--whatsapp-glow); }
+    50% { transform: scale(1.08); box-shadow: 0 6px 30px rgba(37, 211, 102, 0.45); }
+}
+
 .animate-on-scroll {
     opacity: 0;
     transform: translateY(30px);
-    transition: opacity 0.6s ease, transform 0.6s ease;
+    transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .animate-on-scroll.visible {
