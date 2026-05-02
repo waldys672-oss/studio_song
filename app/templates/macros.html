@@ -86,17 +86,25 @@
      data-parent="{{ sample.category.parent.slug if sample.category.parent_id else sample.category.slug }}">
     
     {# Move the image to the background of this DIV #}
+    {% set cover_src = sample.cover_image %}
+    {% if cover_src and not cover_src.startswith('http://') and not cover_src.startswith('https://') %}
+        {% set cover_src = url_for('static', filename='uploads/' + cover_src) %}
+    {% endif %}
     <div class="sample-card__media {% if sample.media_type == 'upload' %}media-upload-bg{% endif %}"
-         style="{% if sample.media_type == 'upload' and sample.cover_image %}background-image: url('{{ url_for('static', filename='uploads/' + sample.cover_image) }}');{% endif %}">
+         style="{% if sample.media_type == 'upload' and cover_src %}background-image: url('{{ cover_src }}');{% endif %}">
         
         {% if sample.media_type == 'youtube' %}
             <iframe src="https://www.youtube.com/embed/{{ sample.get_youtube_embed_id() }}"
                     title="{{ sample.title }}" allowfullscreen loading="lazy"></iframe>
         {% elif sample.media_type == 'upload' %}
+            {% set media_src = sample.media_url %}
+            {% if media_src and not media_src.startswith('http://') and not media_src.startswith('https://') %}
+                {% set media_src = url_for('static', filename='uploads/' + media_src) %}
+            {% endif %}
             <div class="custom-player-wrapper" onclick="togglePlay(this)">
                 {# Keep the video tag for audio, but make it transparent #}
                 <video class="audio-element" preload="none">
-                    <source src="{{ url_for('static', filename='uploads/' + sample.media_url) }}">
+                    <source src="{{ media_src }}">
                 </video>
                 <div class="play-overlay">
                     <div class="play-button-yt">

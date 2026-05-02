@@ -56,18 +56,32 @@ def dashboard():
 
 
 def save_file(file):
-    """دالة مساعدة لرفع الملفات إلى Cloudinary والحصول على الرابط"""
-    if file and allowed_file(file.filename):
-        try:
-            # نرفع الملف مباشرة إلى كلاوديناري
-            # resource_type="auto" يسمح برفع الصوت، الفيديو، والصور تلقائياً
-            upload_result = cloudinary.uploader.upload(file, resource_type="auto")
-            
-            return upload_result.get('secure_url')
-        except Exception as e:
-            print(f"Cloudinary Error: {e}")
+    """Helper to save uploaded media to Cloudinary (with local fallback)."""
+    if file and file.filename and allowed_file(file.filename):
+        # Upload to Cloudinary first when configured.
+        if current_app.config.get('CLOUDINARY_URL'):
+            try:
+                upload_result = cloudinary.uploader.upload(file, resource_type="auto")
+                secure_url = upload_result.get('secure_url')
+                if secure_url:
+                    return secure_url
+            except Exception as e:
+                current_app.logger.warning(f"Cloudinary upload failed, falling back to local storage: {e}")
+                try:
+                    file.stream.seek(0)
+                except Exception:
+                    pass
+
+        # Fallback to local static/uploads storage.
+        filename = secure_filename(file.filename)
+        if not filename:
             return None
+        unique_filename = f"{int(time.time() * 1000)}_{filename}"
+        save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], unique_filename)
+        file.save(save_path)
+        return unique_filename
     return None
+
 
 @admin_bp.route('/samples/add', methods=['GET', 'POST'])
 @admin_required
@@ -149,7 +163,7 @@ def delete_sample(sample_id):
     if sample:
         # حذف الملفات من السيرفر لتوفير المساحة
         for filename in [sample.media_url, sample.cover_image]:
-            if filename and sample.media_type == 'upload':
+            if filename and sample.media_type == 'upload' and not str(filename).startswith(('http://', 'https://')):
                 filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
                 if os.path.exists(filepath):
                     os.remove(filepath)
