@@ -63,12 +63,22 @@
 {% endblock %}
 
 {% block extra_js %}
+{% block extra_js %}
 <script>
 function toggleInputs() {
     const isYoutube = document.getElementById('mediaYoutube').checked;
     document.getElementById('youtubeSection').style.display = isYoutube ? 'block' : 'none';
     document.getElementById('uploadSection').style.display = isYoutube ? 'none' : 'block';
 }
+
+// Add this to prevent double submissions and show loading state
+document.querySelector('form').addEventListener('submit', function() {
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الرفع...';
+});
+
 window.onload = toggleInputs;
 </script>
+{% endblock %}
 {% endblock %}
