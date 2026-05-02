@@ -2,16 +2,13 @@ import urllib.parse
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
 from app.extensions import db
-from app.models import Order, TrackingUpdate, Sample, Category
+from app.models import Order, TrackingUpdate, Sample
 
 orders_bp = Blueprint('orders', __name__)
 
 
 @orders_bp.route('/order/new', methods=['GET', 'POST'])
 def new_order():
-    categories = Category.query.order_by(Category.sort_order).all()
-    samples = Sample.query.order_by(Sample.created_at.desc()).all()
-
     if request.method == 'POST':
         names_requested = request.form.get('names_requested', '').strip()
         occasion_type = request.form.get('occasion_type', '').strip()
@@ -40,7 +37,7 @@ def new_order():
         if errors:
             for error in errors:
                 flash(error, 'error')
-            return render_template('custom_order.html', categories=categories, samples=samples)
+            return render_template('custom_order.html')
 
         # Guest flow: redirect to WhatsApp
         if order_method == 'whatsapp' or not current_user.is_authenticated:
@@ -92,7 +89,7 @@ def new_order():
 
     # Pre-fill from quick order link
     ref_id = request.args.get('sample_id', None)
-    return render_template('custom_order.html', categories=categories, samples=samples, ref_sample_id=ref_id)
+    return render_template('custom_order.html', ref_sample_id=ref_id)
 
 
 @orders_bp.route('/dashboard')

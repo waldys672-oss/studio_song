@@ -42,18 +42,7 @@
                         </select>
                     </div> -->
                 </div>
-
-                <!-- <div class="form-group">
-                    <label class="form-label" for="reference_sample_id"><i class="fas fa-bookmark"></i> اختيار مثال (اختياري)</label>
-                    <select class="form-control" id="reference_sample_id" name="reference_sample_id">
-                        <option value="">بدون مرجع — عمل جديد بالكامل</option>
-                        {% for sample in samples %}
-                            <option value="{{ sample.id }}" {% if ref_sample_id and ref_sample_id|string == sample.id|string %}selected{% endif %}>
-                                {{ sample.title }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div> -->
+                {# Reference sample picker removed for performance (it was inside an HTML comment but still executed by Jinja). #}
 
                 <div class="form-group">
                     <label class="form-label" for="details"><i class="fas fa-align-right"></i> تفاصيل إضافية</label>

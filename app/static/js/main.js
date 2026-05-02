@@ -528,9 +528,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const subRows = document.querySelectorAll('.sub-filter-row');
     const sampleItems = document.querySelectorAll('.sample-item');
 
+
+    // If the page doesn't have any filter UI, skip all of this.
+    if (sampleItems.length === 0 || (mainBtns.length === 0 && subBtns.length === 0 && !allBtn)) {
+        return;
+    }
     // دالة التحكم في تنسيق الأزرار النشطة
     function updateActiveStyles(activeBtn, group) {
+        if (!activeBtn) return;
         group.forEach(btn => {
+            if (!btn) return;
             btn.classList.remove('btn-primary', 'btn-outline', 'active');
             btn.classList.add('btn-ghost');
         });
@@ -561,7 +568,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // حدث الضغط على الأقسام الرئيسية
     mainBtns.forEach(btn => {
         btn.addEventListener('click', function() {
-            updateActiveStyles(this, [...mainBtns, allBtn]);
+            const mainGroup = [...mainBtns];
+            if (allBtn) mainGroup.push(allBtn);
+            updateActiveStyles(this, mainGroup);
             
             const targetId = this.getAttribute('data-target-sub');
             subRows.forEach(row => row.style.display = 'none');
@@ -586,11 +595,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // زر "الكل" الرئيسي
+    if (allBtn) {
     allBtn.addEventListener('click', function() {
         updateActiveStyles(this, [...mainBtns, allBtn]);
         subRows.forEach(row => row.style.display = 'none');
         filterItems('all');
     });
+    }
 });
 
 // دالة تشغيل الصوت للملفات المرفوعة
@@ -608,65 +619,3 @@ function togglePlay(wrapper) {
         wrapper.classList.add('is-playing');
     }
 }
-
-
-
-
-
-
-
-
-document.querySelectorAll('.main-filter-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        // 1. Update active button style
-        document.querySelectorAll('.main-filter-btn').forEach(b => {
-            b.classList.replace('btn-primary', 'btn-ghost');
-            b.classList.remove('active');
-        });
-        this.classList.replace('btn-ghost', 'btn-primary');
-        this.classList.add('active');
-
-        // 2. Filter Samples by 'data-parent' (Main Category)
-        const mainSlug = this.getAttribute('data-main-filter');
-        const items = document.querySelectorAll('.sample-item');
-
-        items.forEach(item => {
-            item.style.display = (item.getAttribute('data-parent') === mainSlug) ? 'block' : 'none';
-        });
-        // 3. Update URL without refreshing (SEO friendly)
-        window.history.pushState({}, '', `/category/${mainSlug}`);
-        
-        // 4. Update the Title text
-        document.getElementById('category-title').innerText = this.innerText.trim();
-    });
-});
-
-
-
-document.querySelectorAll('.main-filter-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        // 1. Update active button style
-        document.querySelectorAll('.main-filter-btn').forEach(b => {
-            b.classList.replace('btn-primary', 'btn-ghost');
-            b.classList.remove('active');
-        });
-        this.classList.replace('btn-ghost', 'btn-primary');
-        this.classList.add('active');
-
-        // 2. Filter Samples by 'data-parent' (Main Category)
-        const mainSlug = this.getAttribute('data-main-filter');
-        const items = document.querySelectorAll('.sample-item');
-
-        items.forEach(item => {
-            item.style.display = (item.getAttribute('data-parent') === mainSlug) ? 'block' : 'none';
-        });
-
-        // 3. Update URL without refreshing (SEO friendly)
-        window.history.pushState({}, '', `/category/${mainSlug}`);
-        
-        // 4. Update the Title text
-        document.getElementById('category-title').innerText = this.innerText.trim();
-    });
-});
-
-

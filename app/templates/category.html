@@ -30,16 +30,13 @@
         <div class="samples-grid" id="samples-container">
             {% if samples %}
                 {% for sample in samples %}
-                    {# Check if the sample belongs to the current main category #}
-                    {% set is_match = (sample.category.slug == category.slug or sample.category.parent.slug == category.slug) %}
-                    
-                    <div class="sample-wrapper" style="{% if not is_match %}display: none;{% endif %}">
+                    <div class="sample-wrapper">
                         {{ sample_card(sample, whatsapp_number) }}
                     </div>
                 {% endfor %}
             {% else %}
                 <div class="samples-empty">
-                    <p>لا توجد أعمال حالياً في هذا القسم.</p>[cite: 3]
+                    <p>لا توجد أعمال حالياً في هذا القسم.</p>
                 </div>
             {% endif %}
         </div>
