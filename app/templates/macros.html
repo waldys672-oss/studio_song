@@ -121,7 +121,7 @@
             <a href="{{ url_for('orders.new_order', sample_id=sample.id) }}" class="btn btn-primary btn-sm">
                 <i class="fas fa-cart-plus"></i> اطلب مثل هذا
             </a>
-<a href="https://wa.me/0558262881?text={{ ('أريد عمل مشابه لـ: ' ~ sample.title ~ ' ' ~ sample.category.name ~ ' ' ~ sample.media_url) | urlencode }}" target="_blank" class="btn btn-whatsapp btn-sm">
+<a href="https://wa.me/+966558262881?text={{ ('أريد عمل مشابه لـ: ' ~ sample.title ~ ' ' ~ sample.category.name ~ ' ' ~ sample.media_url) | urlencode }}" target="_blank" class="btn btn-whatsapp btn-sm">
     <i class="fab fa-whatsapp"></i> اطلب الان 
 </a>
         </div>

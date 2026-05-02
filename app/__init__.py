@@ -10,7 +10,15 @@ def create_app(config_class=Config):
 
     # Ensure upload folder exists
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-    os.makedirs(os.path.join(os.path.dirname(app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', '')), ''), exist_ok=True)
+    # Only try to create a directory for SQLite file-based DBs.
+    # Render runs Postgres where the URI is not a filesystem path.
+    uri = (app.config.get('SQLALCHEMY_DATABASE_URI') or '').strip()
+    if uri.startswith('sqlite:///'):
+        sqlite_path = uri.replace('sqlite:///', '', 1)
+        if sqlite_path and sqlite_path != ':memory:':
+            sqlite_dir = os.path.dirname(sqlite_path)
+            if sqlite_dir:
+                os.makedirs(sqlite_dir, exist_ok=True)
 
     # Initialize extensions
     db.init_app(app)
@@ -35,10 +43,38 @@ def create_app(config_class=Config):
     app.register_blueprint(orders_bp)
     app.register_blueprint(admin_bp)
 
-    # Create tables and seed data
-    with app.app_context():
-        db.create_all()
-        _seed_data()
+    # Render's Python runtime sets `GUNICORN_CMD_ARGS=--preload ...` by default.
+    # With preload, app code runs in a master process before fork; opening DB
+    # connections there can cause slow startups and broken pooled connections
+    # in workers. So we avoid automatic DB init on Render/Postgres by default.
+    #
+    # If you need to initialize/seed the production DB once, set `AUTO_DB_INIT=1`
+    # temporarily on Render and redeploy.
+    auto_db_init = os.environ.get('AUTO_DB_INIT', '').strip().lower() in {'1', 'true', 'yes'}
+    is_sqlite = uri.startswith('sqlite:///')
+    is_render = os.environ.get('RENDER', '').strip().lower() == 'true'
+    if is_sqlite or auto_db_init or not is_render:
+        with app.app_context():
+            db.create_all()
+            _seed_data()
+
+    # If Gunicorn preloads the app then forks workers, dispose inherited pools
+    # in the child so each worker creates its own fresh DB connections.
+    if hasattr(os, 'register_at_fork'):
+        def _after_fork_child():
+            try:
+                with app.app_context():
+                    db.session.remove()
+                    # Don't close parent's connections; just replace the pool.
+                    db.engine.dispose(close=False)
+            except Exception:
+                # Avoid crashing worker startup on best-effort cleanup.
+                pass
+
+        try:
+            os.register_at_fork(after_in_child=_after_fork_child)
+        except Exception:
+            pass
 
     # Context processor for templates
     @app.context_processor

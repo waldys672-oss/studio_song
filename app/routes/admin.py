@@ -78,8 +78,12 @@ def save_file(file):
             return None
         unique_filename = f"{int(time.time() * 1000)}_{filename}"
         save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], unique_filename)
-        file.save(save_path)
-        return unique_filename
+        try:
+            file.save(save_path)
+            return unique_filename
+        except Exception as e:
+            current_app.logger.exception(f"Local upload save failed: {e}")
+            return None
     return None
 
 
@@ -96,16 +100,31 @@ def add_sample():
         media_url = ''
         cover_image = None
 
-        if media_type == 'youtube':
-            media_url = request.form.get('youtube_url', '').strip()
-        else:
+        uploaded_media = request.files.get('media_file')
+        uploaded_has_file = bool(uploaded_media and getattr(uploaded_media, 'filename', ''))
+
+        # If a file is attached, treat this as an upload even if the radio
+        # button remained on "youtube" due to JS/browser quirks.
+        if media_type != 'youtube' or uploaded_has_file:
+            media_type = 'upload'
             # حفظ ملف الميديا (صوت أو فيديو)
-            media_url = save_file(request.files.get('media_file'))
+            media_url = save_file(uploaded_media)
             # حفظ صورة الغلاف
             cover_image = save_file(request.files.get('cover_image'))
+        else:
+            media_type = 'youtube'
+            media_url = request.form.get('youtube_url', '').strip()
 
-        if not title or not media_url:
-            flash('العنوان والملف/الرابط مطلوبان', 'error')
+        if not title:
+            flash('العنوان مطلوب', 'error')
+            return redirect(request.url)
+
+        if media_type == 'youtube' and not media_url:
+            flash('رابط YouTube مطلوب', 'error')
+            return redirect(request.url)
+
+        if media_type == 'upload' and not media_url:
+            flash('ملف الصوت/الفيديو مطلوب', 'error')
             return redirect(request.url)
 
         sample = Sample(
@@ -135,20 +154,35 @@ def edit_sample(sample_id):
         sample.is_featured = request.form.get('is_featured') == 'on'
         media_type = request.form.get('media_type', 'youtube')
 
-        if media_type == 'youtube':
-            sample.media_type = 'youtube'
-            sample.media_url = request.form.get('youtube_url', '').strip()
-        else:
+        uploaded_media = request.files.get('media_file')
+        uploaded_has_file = bool(uploaded_media and getattr(uploaded_media, 'filename', ''))
+
+        if media_type != 'youtube' or uploaded_has_file:
             # تحديث ملف الميديا إذا رفع المستخدم ملفاً جديداً
-            new_media = save_file(request.files.get('media_file'))
+            new_media = save_file(uploaded_media)
             if new_media:
                 sample.media_url = new_media
-                sample.media_type = 'upload'
-            
+            sample.media_type = 'upload'
+
             # تحديث صورة الغلاف إذا رفع المستخدم واحدة جديدة
             new_cover = save_file(request.files.get('cover_image'))
             if new_cover:
                 sample.cover_image = new_cover
+        else:
+            sample.media_type = 'youtube'
+            sample.media_url = request.form.get('youtube_url', '').strip()
+
+        if not sample.title:
+            flash('العنوان مطلوب', 'error')
+            return redirect(request.url)
+
+        if sample.media_type == 'youtube' and not sample.media_url:
+            flash('رابط YouTube مطلوب', 'error')
+            return redirect(request.url)
+
+        if sample.media_type == 'upload' and not sample.media_url:
+            flash('ملف الصوت/الفيديو مطلوب', 'error')
+            return redirect(request.url)
 
         db.session.commit()
         flash('تم تحديث العمل بنجاح', 'success')
