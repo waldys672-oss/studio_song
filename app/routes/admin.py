@@ -9,9 +9,7 @@ from app.extensions import db
 from app.models import Sample, Category, Order, TrackingUpdate, User
 import cloudinary.uploader
 
-# When a user uploads a zaffat or sample:
-upload_result = cloudinary.uploader.upload(file_to_upload, resource_type="auto")
-file_url = upload_result['secure_url'] # This is the link you save in your database
+
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
 # أضف صيغ الصور هنا
@@ -58,12 +56,17 @@ def dashboard():
 
 
 def save_file(file):
-    """دالة مساعدة لحفظ الملفات بأسماء فريدة"""
+    """دالة مساعدة لرفع الملفات إلى Cloudinary والحصول على الرابط"""
     if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        filename = f"{int(time.time())}_{filename}"
-        file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
-        return filename
+        try:
+            # نرفع الملف مباشرة إلى كلاوديناري
+            # resource_type="auto" يسمح برفع الصوت، الفيديو، والصور تلقائياً
+            upload_result = cloudinary.uploader.upload(file, resource_type="auto")
+            
+            return upload_result.get('secure_url')
+        except Exception as e:
+            print(f"Cloudinary Error: {e}")
+            return None
     return None
 
 @admin_bp.route('/samples/add', methods=['GET', 'POST'])
