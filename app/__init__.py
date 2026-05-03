@@ -65,6 +65,26 @@ def _seed_data():
             db.session.add(cat)
         return cat
 
+    # ── 0. Fix slug mismatch: production has 'social', we now want 'success' ─
+    #    Rename the existing row so the upsert below finds it correctly.
+    old_social = Category.query.filter_by(slug='social').first()
+    if old_social:
+        old_social.slug = 'success'
+        old_social.name = 'نجاح وتخرج'
+
+    # Also clean up orphan 'success' row if one was already created by previous deploy
+    db.session.flush()
+    dupes = Category.query.filter_by(slug='success', parent_id=None).all()
+    if len(dupes) > 1:
+        # Keep the one with the lowest id (original), delete extras
+        dupes.sort(key=lambda c: c.id)
+        for orphan in dupes[1:]:
+            # Re-parent any subcategories that point to the orphan
+            for sub in Category.query.filter_by(parent_id=orphan.id).all():
+                sub.parent_id = dupes[0].id
+            db.session.delete(orphan)
+        db.session.flush()
+
     # ── 1. Main categories ────────────────────────────────────────────────────
     zaffat       = _upsert_category(name='زفات وأفراح',           slug='zaffat',       description='زفات عرس مميزة لإضفاء لمسة خاصة على ليلة العمر',            icon='fas fa-ring',           sort_order=1)
     success      = _upsert_category(name='نجاح وتخرج',            slug='success',      description='أعمال صوتية لحفلات التخرج والخطوبة والنجاح',                icon='fas fa-graduation-cap', sort_order=2)
@@ -98,15 +118,12 @@ def _seed_data():
     _upsert_category(name='مناسبات خاصة',  slug='special-occasions', description='أعمال لكل مناسبة خاصة وفريدة',             icon='fas fa-star',          sort_order=2, parent_id=celebrations.id)
 
     # ── 6. Subcategories: شيلات مخصصة ─────────────────────────────────────────
-    # Repair broken slugs that may already exist in production (written in a hurry)
+    # Repair broken slugs that may already exist in production
     _SLUG_REPAIRS = {
         'sang':       ('sheilat-atabah', 'شيلات عتاب',  'fas fa-comment-dots', 1),
-        'rrrfffd':    ('sheilat-ruh',    'شيلات روح',   'fas fa-feather-alt',  2),
-        'rrrfffd2':   ('sheilat-faraq',  'شيلات فراق',  'fas fa-heart-broken', 3),  # duplicate slug guard
         'fffffffd':   ('sheilat-hamasa', 'شيلات حماسة', 'fas fa-fire',         4),
         'rrrfrdcfd':  ('sheilat-fakhr',  'شيلات فخر',   'fas fa-medal',        5),
     }
-    # Fix any row whose slug is one of the broken ones
     for bad_slug, (good_slug, good_name, good_icon, good_order) in _SLUG_REPAIRS.items():
         broken = Category.query.filter_by(slug=bad_slug).first()
         if broken:
@@ -115,13 +132,14 @@ def _seed_data():
             broken.icon       = good_icon
             broken.sort_order = good_order
             broken.parent_id  = sheilat.id
-    # Also handle the duplicate 'rrrfffd' case (two rows with same bad slug)
+    # Handle the duplicate 'rrrfffd' case (two rows with same bad slug)
     broken_dupes = Category.query.filter_by(slug='rrrfffd').all()
     target_slugs = [('sheilat-ruh', 'شيلات روح', 'fas fa-feather-alt', 2),
                     ('sheilat-faraq', 'شيلات فراق', 'fas fa-heart-broken', 3)]
     for i, row in enumerate(broken_dupes[:2]):
         row.slug, row.name, row.icon, row.sort_order = target_slugs[i]
         row.parent_id = sheilat.id
+    db.session.flush()
 
     _upsert_category(name='شيلات عتاب',  slug='sheilat-atabah',  description='شيلات عتاب رقيقة بأسلوب عاطفي مؤثر',        icon='fas fa-comment-dots', sort_order=1, parent_id=sheilat.id)
     _upsert_category(name='شيلات روح',   slug='sheilat-ruh',     description='شيلات روحانية هادئة بأسلوب راقٍ',            icon='fas fa-feather-alt',  sort_order=2, parent_id=sheilat.id)
