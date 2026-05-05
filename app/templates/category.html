@@ -14,11 +14,11 @@
 <section class="section-sm" style="background: var(--bg-alt); border-bottom: 1px solid var(--bg-border);">
     <div class="container">
         {{ category_nav_map(categories, category.slug) }}
-        
+
         <div id="sub-filter-wrapper">
             {% if category.parent_id is none %}
-                <hr style="border: 0; border-top: 1px solid var(--bg-border); margin: var(--space-lg) 0; opacity: 0.5;">
-                {{ category_filter(category.subcategories) }}
+            <hr style="border: 0; border-top: 1px solid var(--bg-border); margin: var(--space-lg) 0; opacity: 0.5;">
+            {{ category_filter(category.subcategories) }}
             {% endif %}
         </div>
     </div>
@@ -29,15 +29,15 @@
     <div class="container">
         <div class="samples-grid" id="samples-container">
             {% if samples %}
-                {% for sample in samples %}
-                    <div class="sample-wrapper">
-                        {{ sample_card(sample, whatsapp_number) }}
-                    </div>
-                {% endfor %}
+            {% for sample in samples %}
+            <div class="sample-wrapper">
+                {{ sample_card(sample, whatsapp_number) }}
+            </div>
+            {% endfor %}
             {% else %}
-                <div class="samples-empty">
-                    <p>لا توجد أعمال حالياً في هذا القسم.</p>
-                </div>
+            <div class="samples-empty">
+                <p>لا توجد أعمال حالياً في هذا القسم.</p>
+            </div>
             {% endif %}
         </div>
     </div>
@@ -45,4 +45,3 @@
 
 {{ back_to_home() }}
 {% endblock %}
-
