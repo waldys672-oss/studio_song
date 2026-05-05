@@ -24,7 +24,8 @@
                             <div class="order-info-item__label">العميل</div>
                             <div class="order-info-item__value">
                                 <i class="fas fa-user" style="color: var(--accent); font-size: 0.85em;"></i>
-                                {% if order.user %}{{ order.user.name }}{% else %}{{ order.guest_name or 'ضيف' }}{% endif %}
+                                {% if order.user %}{{ order.user.name }}{% else %}{{ order.guest_name or 'ضيف' }}{%
+                                endif %}
                             </div>
                         </div>
                         <div class="order-info-item">
@@ -45,21 +46,27 @@
                         </div>
                         <div class="order-info-item">
                             <div class="order-info-item__label">تاريخ الطلب</div>
-                            <div class="order-info-item__value">{{ order.created_at.strftime('%Y/%m/%d - %H:%M') }}</div>
+                            <div class="order-info-item__value">{{ order.created_at.strftime('%Y/%m/%d - %H:%M') }}
+                            </div>
                         </div>
                     </div>
 
                     {% if order.details %}
-                    <div style="margin-top: var(--space-xl); padding-top: var(--space-lg); border-top: 1px solid var(--bg-border);">
+                    <div
+                        style="margin-top: var(--space-xl); padding-top: var(--space-lg); border-top: 1px solid var(--bg-border);">
                         <div class="order-info-item">
                             <div class="order-info-item__label">تفاصيل إضافية</div>
-                            <div class="order-info-item__value" style="margin-top: var(--space-sm); line-height: var(--lh-relaxed);">{{ order.details }}</div>
+                            <div class="order-info-item__value"
+                                style="margin-top: var(--space-sm); line-height: var(--lh-relaxed);">{{ order.details }}
+                            </div>
                         </div>
                     </div>
                     {% endif %}
 
-                    <div style="margin-top: var(--space-xl); padding-top: var(--space-lg); border-top: 1px solid var(--bg-border);">
-                        <a href="https://wa.me/{{ order.whatsapp_number.replace('+', '') }}" target="_blank" class="btn btn-whatsapp">
+                    <div
+                        style="margin-top: var(--space-xl); padding-top: var(--space-lg); border-top: 1px solid var(--bg-border);">
+                        <a href="https://wa.me/{{ order.whatsapp_number.replace('+', '') }}" target="_blank"
+                            class="btn btn-whatsapp">
                             <i class="fab fa-whatsapp"></i> تواصل مع العميل
                         </a>
                     </div>
@@ -72,17 +79,21 @@
                         <div class="form-group">
                             <label class="form-label" for="status"><i class="fas fa-flag"></i> الحالة الجديدة</label>
                             <select class="form-control" id="status" name="status">
-                                <option value="new" {% if order.status == 'new' %}selected{% endif %}>جديد</option>
-                                <option value="in_progress" {% if order.status == 'in_progress' %}selected{% endif %}>قيد التنفيذ</option>
-                                <option value="delivered" {% if order.status == 'delivered' %}selected{% endif %}>تم التسليم</option>
+                                <option value="new" {% if order.status=='new' %}selected{% endif %}>جديد</option>
+                                <option value="in_progress" {% if order.status=='in_progress' %}selected{% endif %}>قيد
+                                    التنفيذ</option>
+                                <option value="delivered" {% if order.status=='delivered' %}selected{% endif %}>تم
+                                    التسليم</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="note"><i class="fas fa-sticky-note"></i> ملاحظة (اختياري)</label>
+                            <label class="form-label" for="note"><i class="fas fa-sticky-note"></i> ملاحظة
+                                (اختياري)</label>
                             <textarea class="form-control" id="note" name="note" rows="3"
-                                      placeholder="أضف ملاحظة للعميل حول التحديث..."></textarea>
+                                placeholder="أضف ملاحظة للعميل حول التحديث..."></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-save"></i> تحديث الحالة</button>
+                        <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-save"></i> تحديث
+                            الحالة</button>
                     </form>
                 </div>
             </div>
@@ -92,7 +103,8 @@
                 {% if tracking %}
                 <div class="timeline">
                     {% for update in tracking %}
-                    <div class="timeline-item timeline-item--{{ 'success' if update.status == 'delivered' else ('warning' if update.status == 'in_progress' else 'info') }}">
+                    <div
+                        class="timeline-item timeline-item--{{ 'success' if update.status == 'delivered' else ('warning' if update.status == 'in_progress' else 'info') }}">
                         <div class="timeline-item__dot"></div>
                         <div class="timeline-item__status">
                             {% if update.status == 'new' %}<i class="fas fa-circle"></i>
@@ -103,7 +115,8 @@
                         {% if update.note %}
                         <div class="timeline-item__note">{{ update.note }}</div>
                         {% endif %}
-                        <div class="timeline-item__date"><i class="far fa-clock"></i> {{ update.created_at.strftime('%Y/%m/%d - %H:%M') }}</div>
+                        <div class="timeline-item__date"><i class="far fa-clock"></i> {{
+                            update.created_at.strftime('%Y/%m/%d - %H:%M') }}</div>
                     </div>
                     {% endfor %}
                 </div>
@@ -114,7 +127,8 @@
         </div>
 
         <div style="margin-top: var(--space-xl);">
-            <a href="{{ url_for('admin.orders') }}" class="btn btn-outline"><i class="fas fa-arrow-right"></i> العودة للطلبات</a>
+            <a href="{{ url_for('admin.orders') }}" class="btn btn-outline"><i class="fas fa-arrow-right"></i> العودة
+                للطلبات</a>
         </div>
     </div>
 </section>
