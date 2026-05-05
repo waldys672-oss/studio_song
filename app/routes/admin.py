@@ -206,6 +206,115 @@ def delete_sample(sample_id):
         db.session.commit()
         flash('تم حذف العمل', 'success')
     return redirect(url_for('admin.samples'))
+
+
+# ─── Categories Management ───
+
+def _slugify(text):
+    """Simple ASCII slug generator."""
+    import re, unicodedata
+    text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('ascii')
+    text = re.sub(r'[^\w\s-]', '', text).strip().lower()
+    return re.sub(r'[\s_-]+', '-', text)
+
+
+@admin_bp.route('/categories')
+@admin_required
+def categories():
+    all_cats = Category.query.order_by(
+        Category.parent_id.asc(), Category.sort_order.asc()
+    ).all()
+    return render_template('admin/categories.html', categories=all_cats)
+
+
+@admin_bp.route('/categories/add', methods=['GET', 'POST'])
+@admin_required
+def add_category():
+    parent_options = Category.query.filter_by(parent_id=None).order_by(Category.sort_order).all()
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        slug = request.form.get('slug', '').strip() or _slugify(name)
+        description = request.form.get('description', '').strip()
+        icon = request.form.get('icon', '').strip()
+        sort_order = request.form.get('sort_order', 0, type=int)
+        parent_id = request.form.get('parent_id', type=int) or None
+
+        if not name or not slug:
+            flash('الاسم والـ Slug مطلوبان', 'error')
+            return redirect(request.url)
+
+        if Category.query.filter_by(slug=slug).first():
+            flash('هذا الـ Slug مستخدم بالفعل، اختر آخر', 'error')
+            return redirect(request.url)
+
+        cat = Category(name=name, slug=slug, description=description,
+                       icon=icon, sort_order=sort_order, parent_id=parent_id)
+        db.session.add(cat)
+        db.session.commit()
+        flash(f'تم إضافة القسم «{name}» بنجاح', 'success')
+        return redirect(url_for('admin.categories'))
+
+    return render_template('admin/category_form.html', category=None,
+                           parent_options=parent_options)
+
+
+@admin_bp.route('/categories/<int:cat_id>/edit', methods=['GET', 'POST'])
+@admin_required
+def edit_category(cat_id):
+    cat = db.session.get(Category, cat_id)
+    if not cat:
+        flash('القسم غير موجود', 'error')
+        return redirect(url_for('admin.categories'))
+
+    parent_options = Category.query.filter(
+        Category.parent_id == None,
+        Category.id != cat_id
+    ).order_by(Category.sort_order).all()
+
+    if request.method == 'POST':
+        cat.name = request.form.get('name', '').strip()
+        cat.slug = request.form.get('slug', '').strip() or _slugify(cat.name)
+        cat.description = request.form.get('description', '').strip()
+        cat.icon = request.form.get('icon', '').strip()
+        cat.sort_order = request.form.get('sort_order', 0, type=int)
+        cat.parent_id = request.form.get('parent_id', type=int) or None
+
+        existing = Category.query.filter_by(slug=cat.slug).first()
+        if existing and existing.id != cat_id:
+            flash('هذا الـ Slug مستخدم بالفعل، اختر آخر', 'error')
+            return redirect(request.url)
+
+        db.session.commit()
+        flash(f'تم تحديث القسم «{cat.name}» بنجاح', 'success')
+        return redirect(url_for('admin.categories'))
+
+    return render_template('admin/category_form.html', category=cat,
+                           parent_options=parent_options)
+
+
+@admin_bp.route('/categories/<int:cat_id>/delete', methods=['POST'])
+@admin_required
+def delete_category(cat_id):
+    cat = db.session.get(Category, cat_id)
+    if not cat:
+        flash('القسم غير موجود', 'error')
+        return redirect(url_for('admin.categories'))
+
+    if cat.samples.count() > 0:
+        flash(f'لا يمكن حذف «{cat.name}» لأنه يحتوي على {cat.samples.count()} عمل. احذف الأعمال أولاً.', 'error')
+        return redirect(url_for('admin.categories'))
+
+    if cat.subcategories.count() > 0:
+        flash(f'لا يمكن حذف «{cat.name}» لأنه يحتوي على أقسام فرعية. احذفها أولاً.', 'error')
+        return redirect(url_for('admin.categories'))
+
+    name = cat.name
+    db.session.delete(cat)
+    db.session.commit()
+    flash(f'تم حذف القسم «{name}»', 'success')
+    return redirect(url_for('admin.categories'))
+
+
 @admin_bp.route('/samples')
 @admin_required
 def samples():
