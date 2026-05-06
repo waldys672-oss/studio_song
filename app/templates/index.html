@@ -1,12 +1,10 @@
-
 {% extends "base.html" %}
-{% from "macros.html" import sample_card, section_header, cta_banner %}
+{% from "macros.html" import cta_banner, sample_card, section_header %}
 
 {% block title %}الرئيسية{% endblock %}
 
 {% block content %}
-<!-- ═══ Hero Section ═══ -->
-<section class="hero" id="hero">
+<section class="hero hero--home" id="hero">
     <div class="hero-particles">
         <div class="hero-particle"></div>
         <div class="hero-particle"></div>
@@ -18,44 +16,92 @@
     <div class="hero-ring"></div>
     <div class="hero-ring-inner"></div>
 
-    <div class="hero-content animate-on-scroll">
-        <h1>اطلب <span class="accent-text">زفتك</span> أو <span class="accent-text">شيلتك</span> الخاصة باسمك</h1>
-        <p class="hero-subtext">
-            نصمم لك أعمال صوتية مخصصة بأسمائكم وتفاصيل مناسبتكم — زفات أفراح، شيلات حماسية، ومقاطع صوتية لجميع المناسبات الخليجية وبصوت فنانك المفضل.
-        </p>
-        <div class="hero-buttons">
-            <a href="#featured" class="btn btn-primary btn-lg">
-                <i class="fas fa-play-circle"></i> تصفح الأعمال
-            </a>
+    <div class="hero-content hero-home">
+        <div class="hero-home__grid">
+            <div class="hero-home__text animate-on-scroll">
+                <h1>اطلب <span class="accent-text">زفتك</span> أو <span class="accent-text">شيلتك</span> الخاصة باسمك</h1>
+                <p class="hero-subtext">
+                    نصمم لك أعمالاً صوتية مخصصة بالأسماء والتفاصيل لمختلف المناسبات الخليجية، من الزفات إلى الشيلات والمقاطع الخاصة.
+                </p>
+                <div class="hero-buttons">
+                    <a href="#featured" class="btn btn-primary btn-lg">
+                        <i class="fas fa-play-circle"></i> تصفح الأعمال
+                    </a>
+                    <a href="{{ url_for('orders.new_order') }}" class="btn btn-ghost btn-lg">
+                        <i class="fas fa-pen-fancy"></i> اطلب عملاً مخصصاً
+                    </a>
+                </div>
+            </div>
 
-            <a href="{{ url_for('orders.new_order') }}" class="btn btn-ghost btn-lg">
-                <i class="fas fa-pen-fancy"></i> اطلب عمل مخصص
-            </a>
+            <div class="hero-home__visual animate-on-scroll">
+                <div class="hero-shot" aria-label="صورة ضوء القمر">
+                    <img
+                        class="hero-shot__img"
+                        src="{{ url_for('static', filename='img/home-hero.png') }}"
+                        alt="ضوء القمر"
+                        loading="eager"
+                        decoding="async"
+                    >
+                    <div class="hero-shot__overlay" aria-hidden="true"></div>
+                </div>
+                <div class="hero-shot__caption" aria-hidden="true">
+                    <span class="badge badge-info" style="border-color: var(--accent-20); color: var(--accent); background: rgba(232, 168, 56, 0.08);">
+                        <i class="fas fa-microphone-lines" style="font-size: 0.8em;"></i> نماذج من أعمالنا
+                    </span>
+                </div>
+            </div>
         </div>
     </div>
 </section>
 
-<!-- ═══ Featured Works ═══ -->
 <section class="section" id="featured">
     <div class="container">
+        {% if search_query %}
+        {{ section_header("نتائج البحث", "ابحث بعنوان العمل ثم استخدم الفلاتر للوصول بسرعة إلى النتيجة المناسبة", "البحث") }}
+        {% else %}
         {{ section_header("أعمالنا المميزة", "استمع إلى نماذج من أعمالنا واختر ما يناسب ذوقك ومناسبتك", "المميزة") }}
+        {% endif %}
 
-        {% if featured_samples %}
-        <!-- Filter Controls -->
+        <form method="GET" action="{{ url_for('main.index') }}#featured" class="animate-on-scroll" style="margin-bottom: var(--space-lg);">
+            <div style="display: flex; gap: var(--space-sm); align-items: center; justify-content: center; flex-wrap: wrap;">
+                <input
+                    type="search"
+                    name="q"
+                    value="{{ search_query }}"
+                    class="form-control"
+                    placeholder="ابحث بعنوان العمل"
+                    style="max-width: 420px;"
+                >
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> بحث
+                </button>
+                {% if search_query %}
+                <a href="{{ url_for('main.index') }}#featured" class="btn btn-ghost">
+                    <i class="fas fa-rotate-left"></i> مسح
+                </a>
+                {% endif %}
+            </div>
+        </form>
+
+        {% if search_query %}
+        <p class="animate-on-scroll" style="text-align: center; color: var(--text-secondary); margin-bottom: var(--space-lg);">
+            نتائج البحث عن: <strong>{{ search_query }}</strong>
+        </p>
+        {% endif %}
+
+        {% if samples %}
         <div class="main-filter-row animate-on-scroll" style="display: flex; gap: var(--space-sm); justify-content: center; margin-bottom: var(--space-md); flex-wrap: wrap;">
             <button class="filter-btn active btn btn-sm btn-primary" data-filter="all">الكل</button>
             {% for cat in categories %}
-                {% if not cat.parent_id %}
-                <button class="filter-btn btn btn-sm btn-ghost main-cat-btn" data-filter="{{ cat.slug }}" data-target-sub="sub-{{ cat.slug }}">
-                    {{ cat.name }}
-                </button>
-                {% endif %}
+            <button class="filter-btn btn btn-sm btn-ghost main-cat-btn" data-filter="{{ cat.slug }}" data-target-sub="sub-{{ cat.slug }}">
+                {{ cat.name }}
+            </button>
             {% endfor %}
         </div>
 
         <div class="sub-filter-container animate-on-scroll" style="margin-bottom: var(--space-2xl);">
             {% for cat in categories %}
-                {% if not cat.parent_id and cat.subcategories.count() > 0 %}
+                {% if cat.subcategories.count() > 0 %}
                 <div class="sub-filter-row" id="sub-{{ cat.slug }}" style="display: none; flex-wrap: wrap; gap: var(--space-sm); justify-content: center; background: var(--bg-elevated); padding: var(--space-md); border-radius: var(--radius-lg); border: 1px solid var(--bg-border);">
                     {% for sub in cat.subcategories %}
                     <button class="sub-filter-btn btn btn-sm btn-ghost" data-filter="{{ sub.slug }}">
@@ -68,10 +114,9 @@
         </div>
         {% endif %}
 
-        <!-- Samples Grid using Macro -->
         <div class="samples-grid">
-            {% if featured_samples %}
-                {% for sample in featured_samples %}
+            {% if samples %}
+                {% for sample in samples %}
                     {{ sample_card(sample, whatsapp_number) }}
                 {% endfor %}
             {% else %}
@@ -79,14 +124,17 @@
                     <div class="samples-empty__icon">
                         <i class="fas fa-compact-disc fa-spin"></i>
                     </div>
-                    <p>سيتم إضافة الأعمال قريباً — تابعونا!</p>
+                    {% if search_query %}
+                    <p>لا توجد أعمال مطابقة لعنوان البحث الحالي.</p>
+                    {% else %}
+                    <p>سيتم إضافة الأعمال قريباً، تابعنا.</p>
+                    {% endif %}
                 </div>
             {% endif %}
         </div>
     </div>
 </section>
 
-<!-- ═══ Categories ═══ -->
 <section class="section section-alt" id="categories">
     <div class="container">
         {{ section_header("أقسامنا", "اختر القسم المناسب لمناسبتك واستعرض الأعمال المتاحة") }}
@@ -105,7 +153,6 @@
     </div>
 </section>
 
-<!-- ═══ How It Works ═══ -->
 <section class="section" id="how-it-works">
     <div class="container">
         {{ section_header("كيف نعمل؟", "ثلاث خطوات بسيطة لتحصل على عملك الصوتي المخصص", "نعمل؟") }}
@@ -114,29 +161,28 @@
             <div class="step-card animate-on-scroll">
                 <div class="step-card__number">١</div>
                 <h3 class="step-card__title"><i class="fas fa-headphones text-accent" style="font-size: 0.8em;"></i> اختر العمل أو النمط</h3>
-                <p class="step-card__desc">تصفح أعمالنا واختر النمط الذي يناسب ذوقك ومناسبتك</p>
+                <p class="step-card__desc">تصفح أعمالنا واختر النمط الذي يناسب ذوقك ومناسبتك.</p>
             </div>
             <div class="step-card animate-on-scroll">
                 <div class="step-card__number">٢</div>
                 <h3 class="step-card__title"><i class="fas fa-pen text-accent" style="font-size: 0.8em;"></i> أضف الأسماء والتفاصيل</h3>
-                <p class="step-card__desc">أرسل لنا الأسماء وتفاصيل المناسبة لنخصص العمل لك</p>
+                <p class="step-card__desc">أرسل لنا الأسماء والتفاصيل المطلوبة لنخصص العمل بالشكل المناسب.</p>
             </div>
             <div class="step-card animate-on-scroll">
                 <div class="step-card__number">٣</div>
-                <h3 class="step-card__title"><i class="fas fa-check-circle text-accent" style="font-size: 0.8em;"></i> استلم عملك خلال وقت قصير</h3>
-                <p class="step-card__desc">نجهز عملك بأعلى جودة ونسلمه لك بأسرع وقت</p>
+                <h3 class="step-card__title"><i class="fas fa-check-circle text-accent" style="font-size: 0.8em;"></i> استلم عملك بسرعة</h3>
+                <p class="step-card__desc">نجهز العمل بأعلى جودة ونسلمه لك خلال وقت قصير.</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- ═══ CTA Banner using Macro ═══ -->
 <section class="section">
     <div class="container">
         {{ cta_banner(
             '<i class="fas fa-sparkles" style="color: var(--accent);"></i> لم تجد ما تبحث عنه؟',
-            "اطلب عملك المخصص بالكامل — نصمم لك عمل صوتي فريد حسب رغبتك",
-            "اطلب عمل مخصص الآن",
+            "اطلب عملك المخصص بالكامل وسنصممه لك حسب رغبتك",
+            "اطلب عملاً مخصصاً الآن",
             url_for('orders.new_order')
         ) }}
     </div>

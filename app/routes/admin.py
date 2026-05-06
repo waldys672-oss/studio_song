@@ -1,18 +1,20 @@
 import os
+import re
 import time
 
 from functools import wraps
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
-from flask_login import login_required, current_user
-from werkzeug.utils import secure_filename
-from app.extensions import db
-from app.models import Sample, Category, Order, TrackingUpdate, User
+
 import cloudinary.uploader
+from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
+from flask_login import current_user, login_required
+from werkzeug.utils import secure_filename
+
+from app.extensions import db
+from app.models import Category, Order, Sample, TrackingUpdate, User
 
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
-# أضف صيغ الصور هنا
 ALLOWED_EXTENSIONS = {'mp3', 'wav', 'mp4', 'webm', 'ogg', 'm4a', 'jpg', 'jpeg', 'png', 'webp'}
 
 
@@ -24,6 +26,7 @@ def admin_required(f):
             flash('ليس لديك صلاحية الوصول', 'error')
             return redirect(url_for('main.index'))
         return f(*args, **kwargs)
+
     return decorated_function
 
 
@@ -31,10 +34,99 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+def normalize_slug(value):
+    value = re.sub(r'[^\w\s-]', '', (value or '').strip().lower(), flags=re.UNICODE)
+    return re.sub(r'[-\s]+', '-', value, flags=re.UNICODE).strip('-_')
+
+
+def get_parent_categories(exclude_id=None):
+    query = Category.query.filter_by(parent_id=None)
+    if exclude_id is not None:
+        query = query.filter(Category.id != exclude_id)
+    return query.order_by(Category.sort_order, Category.name).all()
+
+
+def get_sample_categories():
+    return Category.query.order_by(Category.parent_id, Category.sort_order, Category.name).all()
+
+
+def parse_category_form(category=None):
+    name = request.form.get('name', '').strip()
+    raw_slug = request.form.get('slug', '').strip()
+    slug = normalize_slug(raw_slug or name)
+    description = request.form.get('description', '').strip() or None
+    icon = request.form.get('icon', '').strip() or 'fas fa-folder'
+    sort_order = request.form.get('sort_order', type=int)
+    parent_id = request.form.get('parent_id', type=int)
+
+    if sort_order is None:
+        sort_order = 0
+    if not parent_id:
+        parent_id = None
+
+    errors = []
+    if not name:
+        errors.append('اسم القسم مطلوب')
+    if not slug:
+        errors.append('الرابط المختصر مطلوب')
+    else:
+        slug_query = Category.query.filter_by(slug=slug)
+        if category is not None:
+            slug_query = slug_query.filter(Category.id != category.id)
+        if slug_query.first():
+            errors.append('الرابط المختصر مستخدم بالفعل')
+
+    if parent_id is not None:
+        parent = db.session.get(Category, parent_id)
+        if parent is None:
+            errors.append('القسم الأب غير موجود')
+        elif parent.parent_id is not None:
+            errors.append('يمكن اختيار قسم رئيسي فقط كقسم أب')
+        elif category is not None and parent.id == category.id:
+            errors.append('لا يمكن اختيار نفس القسم كقسم أب')
+        elif category is not None and category.subcategories.count() > 0:
+            errors.append('لا يمكن تحويل قسم رئيسي لديه أقسام فرعية إلى قسم فرعي')
+
+    return {
+        'name': name,
+        'slug': slug,
+        'description': description,
+        'icon': icon,
+        'sort_order': sort_order,
+        'parent_id': parent_id,
+    }, errors
+
+
+def save_file(file):
+    if file and file.filename and allowed_file(file.filename):
+        if current_app.config.get('CLOUDINARY_URL'):
+            try:
+                upload_result = cloudinary.uploader.upload(file, resource_type='auto')
+                secure_url = upload_result.get('secure_url')
+                if secure_url:
+                    return secure_url
+            except Exception as exc:
+                current_app.logger.warning(f'Cloudinary upload failed, falling back to local storage: {exc}')
+                try:
+                    file.stream.seek(0)
+                except Exception:
+                    pass
+
+        filename = secure_filename(file.filename)
+        if not filename:
+            return None
+        unique_filename = f'{int(time.time() * 1000)}_{filename}'
+        save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], unique_filename)
+        file.save(save_path)
+        return unique_filename
+    return None
+
+
 @admin_bp.route('/')
 @admin_required
 def dashboard():
     total_samples = Sample.query.count()
+    total_categories = Category.query.count()
     total_orders = Order.query.count()
     new_orders = Order.query.filter_by(status='new').count()
     in_progress = Order.query.filter_by(status='in_progress').count()
@@ -42,96 +134,166 @@ def dashboard():
     total_users = User.query.count()
     recent_orders = Order.query.order_by(Order.created_at.desc()).limit(5).all()
 
-    return render_template('admin/dashboard.html',
-                           total_samples=total_samples,
-                           total_orders=total_orders,
-                           new_orders=new_orders,
-                           in_progress=in_progress,
-                           delivered=delivered,
-                           total_users=total_users,
-                           recent_orders=recent_orders)
+    return render_template(
+        'admin/dashboard.html',
+        total_samples=total_samples,
+        total_categories=total_categories,
+        total_orders=total_orders,
+        new_orders=new_orders,
+        in_progress=in_progress,
+        delivered=delivered,
+        total_users=total_users,
+        recent_orders=recent_orders,
+    )
 
 
-# ─── Samples Management ───
+@admin_bp.route('/categories')
+@admin_required
+def categories():
+    all_categories = Category.query.order_by(Category.parent_id, Category.sort_order, Category.name).all()
+    return render_template('admin/categories.html', categories=all_categories)
 
 
-def save_file(file):
-    """Helper to save uploaded media to Cloudinary (with local fallback)."""
-    if file and file.filename and allowed_file(file.filename):
-        # Upload to Cloudinary first when configured.
-        if current_app.config.get('CLOUDINARY_URL'):
-            try:
-                upload_result = cloudinary.uploader.upload(file, resource_type="auto")
-                secure_url = upload_result.get('secure_url')
-                if secure_url:
-                    return secure_url
-            except Exception as e:
-                current_app.logger.warning(f"Cloudinary upload failed, falling back to local storage: {e}")
-                try:
-                    file.stream.seek(0)
-                except Exception:
-                    pass
+@admin_bp.route('/categories/add', methods=['GET', 'POST'])
+@admin_required
+def add_category():
+    parent_categories = get_parent_categories()
 
-        # Fallback to local static/uploads storage.
-        filename = secure_filename(file.filename)
-        if not filename:
-            return None
-        unique_filename = f"{int(time.time() * 1000)}_{filename}"
-        save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], unique_filename)
-        file.save(save_path)
-        return unique_filename
-    return None
+    if request.method == 'POST':
+        form_data, errors = parse_category_form()
+        if errors:
+            for error in errors:
+                flash(error, 'error')
+            return render_template('admin/category_form.html', category=None, parent_categories=parent_categories)
+
+        category = Category(**form_data)
+        db.session.add(category)
+        db.session.commit()
+        flash('تمت إضافة القسم بنجاح', 'success')
+        return redirect(url_for('admin.categories'))
+
+    return render_template('admin/category_form.html', category=None, parent_categories=parent_categories)
+
+
+@admin_bp.route('/categories/<int:category_id>/edit', methods=['GET', 'POST'])
+@admin_required
+def edit_category(category_id):
+    category = db.session.get(Category, category_id)
+    if not category:
+        flash('القسم غير موجود', 'error')
+        return redirect(url_for('admin.categories'))
+
+    parent_categories = get_parent_categories(exclude_id=category.id)
+
+    if request.method == 'POST':
+        form_data, errors = parse_category_form(category=category)
+        if errors:
+            for error in errors:
+                flash(error, 'error')
+            return render_template(
+                'admin/category_form.html',
+                category=category,
+                parent_categories=parent_categories,
+            )
+
+        category.name = form_data['name']
+        category.slug = form_data['slug']
+        category.description = form_data['description']
+        category.icon = form_data['icon']
+        category.sort_order = form_data['sort_order']
+        category.parent_id = form_data['parent_id']
+        db.session.commit()
+        flash('تم تحديث القسم بنجاح', 'success')
+        return redirect(url_for('admin.categories'))
+
+    return render_template('admin/category_form.html', category=category, parent_categories=parent_categories)
+
+
+@admin_bp.route('/categories/<int:category_id>/delete', methods=['POST'])
+@admin_required
+def delete_category(category_id):
+    category = db.session.get(Category, category_id)
+    if not category:
+        flash('القسم غير موجود', 'error')
+        return redirect(url_for('admin.categories'))
+
+    if category.subcategories.count() > 0:
+        flash('لا يمكن حذف قسم يحتوي على أقسام فرعية', 'error')
+        return redirect(url_for('admin.categories'))
+
+    if category.samples.count() > 0:
+        flash('لا يمكن حذف قسم مرتبط بأعمال موجودة', 'error')
+        return redirect(url_for('admin.categories'))
+
+    if Order.query.filter_by(subcategory_id=category.id).first():
+        flash('لا يمكن حذف قسم مرتبط بطلبات موجودة', 'error')
+        return redirect(url_for('admin.categories'))
+
+    db.session.delete(category)
+    db.session.commit()
+    flash('تم حذف القسم', 'success')
+    return redirect(url_for('admin.categories'))
 
 
 @admin_bp.route('/samples/add', methods=['GET', 'POST'])
 @admin_required
 def add_sample():
-    categories = Category.query.order_by(Category.sort_order).all()
+    categories = get_sample_categories()
     if request.method == 'POST':
         title = request.form.get('title', '').strip()
         category_id = request.form.get('category_id', type=int)
         media_type = request.form.get('media_type', 'youtube')
         is_featured = request.form.get('is_featured') == 'on'
-        
+        selected_category = db.session.get(Category, category_id) if category_id else None
+
         media_url = ''
         cover_image = None
 
         if media_type == 'youtube':
             media_url = request.form.get('youtube_url', '').strip()
         else:
-            # حفظ ملف الميديا (صوت أو فيديو)
             media_url = save_file(request.files.get('media_file'))
-            # حفظ صورة الغلاف
             cover_image = save_file(request.files.get('cover_image'))
 
-        if not title or not media_url:
-            flash('العنوان والملف/الرابط مطلوبان', 'error')
+        if not title or not media_url or selected_category is None:
+            flash('العنوان والقسم والملف أو الرابط مطلوبة', 'error')
             return redirect(request.url)
 
         sample = Sample(
             title=title,
-            category_id=category_id,
+            category_id=selected_category.id,
             media_type=media_type,
             media_url=media_url,
-            cover_image=cover_image, # حفظ الصورة
-            is_featured=is_featured
+            cover_image=cover_image,
+            is_featured=is_featured,
         )
         db.session.add(sample)
         db.session.commit()
-        flash('تم إضافة العمل بنجاح', 'success')
+        flash('تمت إضافة العمل بنجاح', 'success')
         return redirect(url_for('admin.samples'))
 
     return render_template('admin/sample_form.html', categories=categories, sample=None)
+
 
 @admin_bp.route('/samples/<int:sample_id>/edit', methods=['GET', 'POST'])
 @admin_required
 def edit_sample(sample_id):
     sample = db.session.get(Sample, sample_id)
-    categories = Category.query.order_by(Category.sort_order).all()
-    
+    if not sample:
+        flash('العمل غير موجود', 'error')
+        return redirect(url_for('admin.samples'))
+
+    categories = get_sample_categories()
+
     if request.method == 'POST':
+        category_id = request.form.get('category_id', type=int)
+        selected_category = db.session.get(Category, category_id) if category_id else None
+        if selected_category is None:
+            flash('القسم غير موجود', 'error')
+            return redirect(request.url)
+
         sample.title = request.form.get('title', '').strip()
-        sample.category_id = request.form.get('category_id', type=int)
+        sample.category_id = selected_category.id
         sample.is_featured = request.form.get('is_featured') == 'on'
         media_type = request.form.get('media_type', 'youtube')
 
@@ -139,13 +301,11 @@ def edit_sample(sample_id):
             sample.media_type = 'youtube'
             sample.media_url = request.form.get('youtube_url', '').strip()
         else:
-            # تحديث ملف الميديا إذا رفع المستخدم ملفاً جديداً
             new_media = save_file(request.files.get('media_file'))
             if new_media:
                 sample.media_url = new_media
                 sample.media_type = 'upload'
-            
-            # تحديث صورة الغلاف إذا رفع المستخدم واحدة جديدة
+
             new_cover = save_file(request.files.get('cover_image'))
             if new_cover:
                 sample.cover_image = new_cover
@@ -156,29 +316,33 @@ def edit_sample(sample_id):
 
     return render_template('admin/sample_form.html', categories=categories, sample=sample)
 
+
 @admin_bp.route('/samples/<int:sample_id>/delete', methods=['POST'])
 @admin_required
 def delete_sample(sample_id):
     sample = db.session.get(Sample, sample_id)
-    if sample:
-        # حذف الملفات من السيرفر لتوفير المساحة
-        for filename in [sample.media_url, sample.cover_image]:
-            if filename and sample.media_type == 'upload' and not str(filename).startswith(('http://', 'https://')):
-                filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-                if os.path.exists(filepath):
-                    os.remove(filepath)
-        
-        db.session.delete(sample)
-        db.session.commit()
-        flash('تم حذف العمل', 'success')
+    if not sample:
+        flash('العمل غير موجود', 'error')
+        return redirect(url_for('admin.samples'))
+
+    for filename in [sample.media_url, sample.cover_image]:
+        if filename and sample.media_type == 'upload' and not str(filename).startswith(('http://', 'https://')):
+            filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+            if os.path.exists(filepath):
+                os.remove(filepath)
+
+    db.session.delete(sample)
+    db.session.commit()
+    flash('تم حذف العمل', 'success')
     return redirect(url_for('admin.samples'))
+
+
 @admin_bp.route('/samples')
 @admin_required
 def samples():
-    """دالة عرض جميع الأعمال في لوحة التحكم"""
     all_samples = Sample.query.order_by(Sample.created_at.desc()).all()
     return render_template('admin/samples.html', samples=all_samples)
-# ─── Orders Management ───
+
 
 @admin_bp.route('/orders')
 @admin_required
@@ -208,7 +372,7 @@ def order_detail(order_id):
             tracking = TrackingUpdate(
                 order_id=order.id,
                 status=new_status,
-                note=note or f'تم تحديث الحالة إلى: {order.status_label}'
+                note=note or f'تم تحديث الحالة إلى: {order.status_label}',
             )
             db.session.add(tracking)
             db.session.commit()

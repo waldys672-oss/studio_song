@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}إدارة الأقسام{% endblock %}
+
+{% block content %}
+<section class="admin-page">
+    <div class="container">
+        <div class="dashboard-header">
+            <h1><i class="fas fa-folder-tree"></i> إدارة <span class="accent-text">الأقسام</span></h1>
+            <a href="{{ url_for('admin.add_category') }}" class="btn btn-primary"><i class="fas fa-plus"></i> إضافة قسم</a>
+        </div>
+
+        <div class="admin-table-wrapper animate-on-scroll">
+            {% if categories %}
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>الاسم</th>
+                        <th>النوع</th>
+                        <th>القسم الأب</th>
+                        <th>الرابط</th>
+                        <th>الأعمال</th>
+                        <th>الأقسام الفرعية</th>
+                        <th>الترتيب</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                    <tr>
+                        <td>{{ category.id }}</td>
+                        <td>
+                            {% if category.parent %}
+                            <span style="color: var(--text-dim);">↳</span>
+                            {% endif %}
+                            {{ category.name }}
+                        </td>
+                        <td>{{ 'فرعي' if category.parent else 'رئيسي' }}</td>
+                        <td>{{ category.parent.name if category.parent else '-' }}</td>
+                        <td><code dir="ltr">{{ category.slug }}</code></td>
+                        <td>{{ category.samples.count() }}</td>
+                        <td>{{ category.subcategories.count() }}</td>
+                        <td>{{ category.sort_order }}</td>
+                        <td>
+                            <div class="admin-table-actions">
+                                <a href="{{ url_for('admin.edit_category', category_id=category.id) }}" class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i> تعديل</a>
+                                <form method="POST" action="{{ url_for('admin.delete_category', category_id=category.id) }}" style="display: inline;" onsubmit="return confirm('هل أنت متأكد من حذف هذا القسم؟')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-outline" style="color: var(--error); border-color: var(--error);"><i class="fas fa-trash-alt"></i> حذف</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="samples-empty">
+                <div class="samples-empty__icon"><i class="fas fa-folder-open"></i></div>
+                <p>لا توجد أقسام حتى الآن.</p>
+                <a href="{{ url_for('admin.add_category') }}" class="btn btn-primary" style="margin-top: var(--space-lg);"><i class="fas fa-plus"></i> أضف أول قسم</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -38,12 +38,7 @@
                 <a href="{{ url_for('main.index') }}" class="{% if request.endpoint == 'main.index' %}active{% endif %}">
                     <i class="fas fa-home"></i> الرئيسية
                 </a>
-                <a href="{{ url_for('main.index') }}#featured">
-                    <i class="fas fa-play-circle"></i> الأعمال
-                </a>
-                <a href="{{ url_for('main.index') }}#categories">
-                    <i class="fas fa-th-large"></i> الأقسام
-                </a>
+
 
                 <a href="{{ url_for('main.about') }}" class="{% if request.endpoint == 'main.about' %}active{% endif %}">
                     <i class="fas fa-info-circle"></i> من نحن
@@ -145,11 +140,9 @@
                 <!-- Categories -->
                 <div class="footer-col">
                     <h4 class="footer-col__title"><i class="fas fa-th-large"></i> الأقسام</h4>
-                    <a href="{{ url_for('main.category', slug='zaffat') }}"><i class="fas fa-chevron-left"></i> زفات وأفراح</a>
-                    <a href="{{ url_for('main.category', slug='social') }}"><i class="fas fa-chevron-left"></i>  مناسبات اجتماعية </a>
-                    <a href="{{ url_for('main.category', slug='newborn') }}"><i class="fas fa-chevron-left"></i> مواليد وأطفال</a>
-                    <a href="{{ url_for('main.category', slug='celebrations') }}"><i class="fas fa-chevron-left"></i> أعياد ومناسبات</a>
-                    <a href="{{ url_for('main.category', slug='sheilat') }}"><i class="fas fa-chevron-left"></i> شيلات مخصصة</a>
+                    {% for category in footer_categories %}
+                    <a href="{{ url_for('main.category', slug=category.slug) }}"><i class="fas fa-chevron-left"></i> {{ category.name }}</a>
+                    {% endfor %}
                 </div>
 
                 <!-- Contact -->
@@ -169,7 +162,7 @@
     </footer>
 
     <!-- ═══ Sticky WhatsApp ═══ -->
-    <a href="https://wa.me/0558262881?}}" target="_blank" class="whatsapp-float" aria-label="تواصل واتساب">
+    <a href="https://wa.me/{{ whatsapp_number.replace('+', '') }}" target="_blank" class="whatsapp-float" aria-label="تواصل واتساب">
         <i class="fab fa-whatsapp"></i>
     </a>
 

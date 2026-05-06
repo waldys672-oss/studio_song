@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "macros.html" import back_to_home, sample_card, section_header %}
+
+{% block title %}{{ sample.title }}{% endblock %}
+
+{% block content %}
+<section class="category-hero">
+    <div class="container">
+        <h1><i class="fas fa-share-nodes"></i> {{ sample.title }}</h1>
+        <p>
+            <span style="color: var(--text-tertiary);">القسم:</span>
+            <a href="{{ url_for('main.category', slug=(sample.category.parent.slug if sample.category.parent else sample.category.slug)) }}" style="color: var(--accent); text-decoration: none;">
+                {{ sample.category.parent.name if sample.category.parent else sample.category.name }}
+            </a>
+            {% if sample.category.parent %}
+            <span style="color: var(--text-dim);">/</span>
+            <a href="{{ url_for('main.category', slug=sample.category.slug) }}" style="color: var(--text-secondary); text-decoration: none;">
+                {{ sample.category.name }}
+            </a>
+            {% endif %}
+        </p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        {{ section_header("مشاركة هذا العمل", "انسخ الرابط أو شاركه مباشرة، وسيظهر هذا العمل عند فتح الرابط", "مشاركة") }}
+
+        <div class="samples-grid" style="max-width: 520px; margin: 0 auto;">
+            {{ sample_card(sample, whatsapp_number) }}
+        </div>
+    </div>
+</section>
+
+{{ back_to_home() }}
+{% endblock %}

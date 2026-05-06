@@ -345,6 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initScrollAnimations();
     initFlashMessages();
     initSmoothScroll();
+    initShareButtons();
 });
 
 /* ═══════════════════════════════
@@ -471,6 +472,94 @@ function initSmoothScroll() {
             }
         });
     });
+}
+
+function initShareButtons() {
+    const buttons = document.querySelectorAll('.js-share-sample');
+    if (buttons.length === 0) return;
+
+    buttons.forEach((btn) => {
+        btn.addEventListener('click', async () => {
+            const sharePath = btn.getAttribute('data-share-path') || '';
+            const shareTitle = btn.getAttribute('data-share-title') || '';
+            if (!sharePath) return;
+
+            const shareUrl = new URL(sharePath, window.location.origin).toString();
+
+            try {
+                if (navigator.share) {
+                    await navigator.share({ title: shareTitle, text: shareTitle, url: shareUrl });
+                    return;
+                }
+                await copyToClipboard(shareUrl);
+                showClientToast('تم نسخ رابط المشاركة', 'success');
+            } catch (err) {
+                try {
+                    await copyToClipboard(shareUrl);
+                    showClientToast('تم نسخ رابط المشاركة', 'success');
+                } catch (copyErr) {
+                    showClientToast('تعذر نسخ الرابط، انسخه يدوياً من شريط العنوان', 'error');
+                }
+            }
+        });
+    });
+}
+
+async function copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return;
+    }
+
+    const input = document.createElement('input');
+    input.value = text;
+    input.setAttribute('readonly', '');
+    input.style.position = 'fixed';
+    input.style.top = '-1000px';
+    input.style.left = '-1000px';
+    document.body.appendChild(input);
+    input.select();
+    document.execCommand('copy');
+    input.remove();
+}
+
+function showClientToast(message, type) {
+    const toastType = type || 'info';
+    let container = document.getElementById('clientFlashMessages');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'flash-messages';
+        container.id = 'clientFlashMessages';
+        document.body.appendChild(container);
+    }
+
+    const icon = toastType === 'success'
+        ? 'fa-check-circle'
+        : toastType === 'error'
+            ? 'fa-exclamation-circle'
+            : toastType === 'warning'
+                ? 'fa-exclamation-triangle'
+                : 'fa-info-circle';
+
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${toastType}`;
+    alert.innerHTML = `
+        <i class="fas ${icon}"></i>
+        <span>${message}</span>
+        <button class="alert-close" type="button" aria-label="إغلاق">أ×</button>
+    `.trim();
+
+    const closeBtn = alert.querySelector('.alert-close');
+    closeBtn.addEventListener('click', () => alert.remove());
+
+    container.appendChild(alert);
+
+    setTimeout(() => {
+        if (!alert.isConnected) return;
+        alert.style.opacity = '0';
+        alert.style.transform = 'translateY(-20px)';
+        setTimeout(() => alert.remove(), 300);
+    }, 3500);
 }
 
 function togglePlay(wrapper) {
