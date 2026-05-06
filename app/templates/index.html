@@ -16,7 +16,7 @@
     <div class="hero-ring"></div>
     <div class="hero-ring-inner"></div>
 
-    <div class="hero-content hero-home">
+    <div class="hero-content hero-home" style="--hero-shot-image: url('{{ url_for('static', filename='uploads/daw_al-Qamar-gallry.png') }}');">
         <div class="hero-home__grid">
             <div class="hero-home__text animate-on-scroll">
                 <h1>اطلب <span class="accent-text">زفتك</span> أو <span class="accent-text">شيلتك</span> الخاصة باسمك</h1>
@@ -37,7 +37,7 @@
                 <div class="hero-shot" aria-label="صورة ضوء القمر">
                     <img
                         class="hero-shot__img"
-                        src="{{ url_for('static', filename='img/home-hero.png') }}"
+                        src="{{ url_for('static', filename='uploads/daw_al-Qamar-gallry.png') }}"
                         alt="ضوء القمر"
                         loading="eager"
                         decoding="async"
@@ -46,7 +46,7 @@
                 </div>
                 <div class="hero-shot__caption" aria-hidden="true">
                     <span class="badge badge-info" style="border-color: var(--accent-20); color: var(--accent); background: rgba(232, 168, 56, 0.08);">
-                        <i class="fas fa-microphone-lines" style="font-size: 0.8em;"></i> نماذج من أعمالنا
+                        <i class="fas fa-microphone-lines" style="font-size: 0.8em;"></i> نماذج خدماتنا الصوتية
                     </span>
                 </div>
             </div>
@@ -117,7 +117,7 @@
         <div class="samples-grid">
             {% if samples %}
                 {% for sample in samples %}
-                    {{ sample_card(sample, whatsapp_number) }}
+                    {{ sample_card(sample, '+966558262881') }}
                 {% endfor %}
             {% else %}
                 <div class="samples-empty">
