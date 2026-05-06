@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'تعديل قسم' if category else 'إضافة قسم' }}{% endblock %}
+
+{% block content %}
+<section class="order-page">
+    <div class="container">
+        <div class="order-form-card animate-on-scroll">
+            <h1>
+                <i class="fas {{ 'fa-edit' if category else 'fa-plus-circle' }}" style="color: var(--accent); font-size: 0.8em;"></i>
+                {{ 'تعديل' if category else 'إضافة' }} <span class="accent-text">قسم</span>
+            </h1>
+
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="form-group">
+                    <label class="form-label" for="name"><i class="fas fa-folder"></i> اسم القسم *</label>
+                    <input type="text" class="form-control" id="name" name="name" required value="{{ request.form.get('name', category.name if category else '') }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="slug"><i class="fas fa-link"></i> الرابط المختصر *</label>
+                    <input type="text" class="form-control" id="slug" name="slug" dir="ltr" required value="{{ request.form.get('slug', category.slug if category else '') }}">
+                    <p style="margin-top: var(--space-xs); color: var(--text-dim); font-size: var(--fs-sm);">يُستخدم هذا الحقل في رابط صفحة القسم، ويمكن تركه قريباً من الاسم أو كتابته بالإنجليزية.</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="parent_id"><i class="fas fa-sitemap"></i> القسم الأب</label>
+                    {% set selected_parent = request.form.get('parent_id', category.parent_id if category else '') %}
+                    <select class="form-control" id="parent_id" name="parent_id">
+                        <option value="">قسم رئيسي</option>
+                        {% for parent in parent_categories %}
+                        <option value="{{ parent.id }}" {% if selected_parent|string == parent.id|string %}selected{% endif %}>{{ parent.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <p style="margin-top: var(--space-xs); color: var(--text-dim); font-size: var(--fs-sm);">النظام يدعم مستويين فقط: قسم رئيسي ثم قسم فرعي.</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="icon"><i class="fas fa-icons"></i> أيقونة Font Awesome</label>
+                    <input type="text" class="form-control" id="icon" name="icon" dir="ltr" value="{{ request.form.get('icon', category.icon if category else 'fas fa-folder') }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="sort_order"><i class="fas fa-arrow-down-short-wide"></i> الترتيب</label>
+                    <input type="number" class="form-control" id="sort_order" name="sort_order" value="{{ request.form.get('sort_order', category.sort_order if category else 0) }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="description"><i class="fas fa-align-left"></i> الوصف</label>
+                    <textarea class="form-control" id="description" name="description" rows="4">{{ request.form.get('description', category.description if category else '') }}</textarea>
+                </div>
+
+                <div style="display: flex; gap: var(--space-sm); flex-wrap: wrap;">
+                    <button type="submit" class="btn btn-primary">{{ 'حفظ التعديلات' if category else 'إضافة القسم' }}</button>
+                    <a href="{{ url_for('admin.categories') }}" class="btn btn-ghost">رجوع</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -22,7 +22,9 @@
                     <label class="form-label" for="category_id"><i class="fas fa-folder"></i> القسم *</label>
                     <select class="form-control" id="category_id" name="category_id" required>
                         {% for cat in categories %}
-                            <option value="{{ cat.id }}" {% if sample and sample.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                            <option value="{{ cat.id }}" {% if sample and sample.category_id == cat.id %}selected{% endif %}>
+                                {{ cat.parent.name ~ ' / ' if cat.parent else '' }}{{ cat.name }}
+                            </option>
                         {% endfor %}
                     </select>
                 </div>

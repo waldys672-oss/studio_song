@@ -6,15 +6,8 @@
 <section class="admin-page">
     <div class="container">
         <div class="dashboard-header">
-            <h1><i class="fas fa-layer-group"></i> إدارة <span class="accent-text">الأقسام</span></h1>
-            <div style="display: flex; gap: var(--space-sm);">
-                <a href="{{ url_for('admin.add_category') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> إضافة قسم
-                </a>
-                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-right"></i> لوحة التحكم
-                </a>
-            </div>
+            <h1><i class="fas fa-folder-tree"></i> إدارة <span class="accent-text">الأقسام</span></h1>
+            <a href="{{ url_for('admin.add_category') }}" class="btn btn-primary"><i class="fas fa-plus"></i> إضافة قسم</a>
         </div>
 
         <div class="admin-table-wrapper animate-on-scroll">
@@ -23,88 +16,39 @@
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>الأيقونة</th>
                         <th>الاسم</th>
-                        <th>Slug</th>
                         <th>النوع</th>
-                        <th>القسم الرئيسي</th>
-                        <th>الترتيب</th>
+                        <th>القسم الأب</th>
+                        <th>الرابط</th>
                         <th>الأعمال</th>
                         <th>الأقسام الفرعية</th>
+                        <th>الترتيب</th>
                         <th>إجراءات</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for cat in categories %}
-                    <tr {% if cat.parent_id %}style="background: rgba(255,255,255,0.03);" {% endif %}>
-                        <td>{{ cat.id }}</td>
+                    {% for category in categories %}
+                    <tr>
+                        <td>{{ category.id }}</td>
                         <td>
-                            {% if cat.icon %}
-                            <i class="{{ cat.icon }}" style="font-size: 1.2rem; color: var(--accent);"></i>
-                            {% else %}
-                            <i class="fas fa-folder" style="color: var(--text-dim);"></i>
+                            {% if category.parent %}
+                            <span style="color: var(--text-dim);">↳</span>
                             {% endif %}
+                            {{ category.name }}
                         </td>
-                        <td>
-                            {% if cat.parent_id %}
-                            <span style="padding-right: var(--space-md); color: var(--text-dim); font-size: 0.85em;">
-                                <i class="fas fa-level-up-alt fa-rotate-90" style="font-size: 0.7em;"></i>
-                            </span>
-                            {% endif %}
-                            <strong>{{ cat.name }}</strong>
-                        </td>
-                        <td>
-                            <code
-                                style="font-size: 0.8em; background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px;">
-                                {{ cat.slug }}
-                            </code>
-                        </td>
-                        <td>
-                            {% if cat.parent_id %}
-                            <span class="badge badge-info">فرعي</span>
-                            {% else %}
-                            <span class="badge badge-success">رئيسي</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if cat.parent %}
-                            <i class="{{ cat.parent.icon or 'fas fa-folder' }}"
-                                style="color: var(--accent); margin-left: 4px;"></i>
-                            {{ cat.parent.name }}
-                            {% else %}
-                            <span style="color: var(--text-dim);">—</span>
-                            {% endif %}
-                        </td>
-                        <td style="text-align: center;">{{ cat.sort_order }}</td>
-                        <td style="text-align: center;">
-                            <span
-                                style="font-weight: 600; color: {% if cat.samples.count() > 0 %}var(--accent){% else %}var(--text-dim){% endif %};">
-                                {{ cat.samples.count() }}
-                            </span>
-                        </td>
-                        <td style="text-align: center;">
-                            {% if not cat.parent_id %}
-                            <span
-                                style="font-weight: 600; color: {% if cat.subcategories.count() > 0 %}var(--secondary){% else %}var(--text-dim){% endif %};">
-                                {{ cat.subcategories.count() }}
-                            </span>
-                            {% else %}
-                            <span style="color: var(--text-dim);">—</span>
-                            {% endif %}
-                        </td>
+                        <td>{{ 'فرعي' if category.parent else 'رئيسي' }}</td>
+                        <td>{{ category.parent.name if category.parent else '-' }}</td>
+                        <td><code dir="ltr">{{ category.slug }}</code></td>
+                        <td>{{ category.samples.count() }}</td>
+                        <td>{{ category.subcategories.count() }}</td>
+                        <td>{{ category.sort_order }}</td>
                         <td>
                             <div class="admin-table-actions">
-                                <a href="{{ url_for('admin.edit_category', cat_id=cat.id) }}"
-                                    class="btn btn-sm btn-secondary">
-                                    <i class="fas fa-edit"></i> تعديل
-                                </a>
-                                <button type="button" class="btn btn-sm btn-outline delete-cat-btn"
-                                    style="color: var(--error, #ef4444); border-color: var(--error, #ef4444);"
-                                    data-cat-name="{{ cat.name }}"
-                                    data-delete-url="{{ url_for('admin.delete_category', cat_id=cat.id) }}"
-                                    data-csrf="{{ csrf_token() }}">
-                                    <i class="fas fa-trash-alt"></i> حذف
-                                </button>
+                                <a href="{{ url_for('admin.edit_category', category_id=category.id) }}" class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i> تعديل</a>
+                                <form method="POST" action="{{ url_for('admin.delete_category', category_id=category.id) }}" style="display: inline;" onsubmit="return confirm('هل أنت متأكد من حذف هذا القسم؟')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-outline" style="color: var(--error); border-color: var(--error);"><i class="fas fa-trash-alt"></i> حذف</button>
+                                </form>
                             </div>
                         </td>
                     </tr>
@@ -113,75 +57,12 @@
             </table>
             {% else %}
             <div class="samples-empty">
-                <div class="samples-empty__icon"><i class="fas fa-layer-group"></i></div>
-                <p>لا توجد أقسام بعد</p>
-                <a href="{{ url_for('admin.add_category') }}" class="btn btn-primary"
-                    style="margin-top: var(--space-lg);">
-                    <i class="fas fa-plus"></i> أضف أول قسم
-                </a>
+                <div class="samples-empty__icon"><i class="fas fa-folder-open"></i></div>
+                <p>لا توجد أقسام حتى الآن.</p>
+                <a href="{{ url_for('admin.add_category') }}" class="btn btn-primary" style="margin-top: var(--space-lg);"><i class="fas fa-plus"></i> أضف أول قسم</a>
             </div>
             {% endif %}
         </div>
     </div>
 </section>
-
-<!-- ═══ Delete Confirmation Modal ═══ -->
-<div id="deleteCatModal" style="
-    display: none; position: fixed; inset: 0; z-index: 9999;
-    background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
-    align-items: center; justify-content: center;">
-    <div style="
-        background: var(--surface-1, #12122a);
-        border: 1px solid rgba(255,255,255,0.12);
-        border-radius: 20px; padding: 2.5rem 2rem;
-        max-width: 400px; width: 90%; text-align: center;
-        box-shadow: 0 30px 60px rgba(0,0,0,0.6);">
-        <div style="font-size: 3.5rem; margin-bottom: 1rem; line-height: 1;">
-            <i class="fas fa-trash-alt" style="color: #ef4444;"></i>
-        </div>
-        <h2 style="margin: 0 0 0.75rem; font-size: 1.3rem;">تأكيد الحذف</h2>
-        <p id="deleteCatMsg"
-            style="color: var(--text-dim, #aaa); margin: 0 0 2rem; line-height: 1.7; font-size: 0.95rem;"></p>
-        <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
-            <form id="deleteCatForm" method="POST" style="display: inline;">
-                <input type="hidden" name="csrf_token" id="deleteCatCsrf">
-                <button type="submit" class="btn btn-primary"
-                    style="background: #ef4444; border-color: #ef4444; min-width: 120px;">
-                    <i class="fas fa-trash-alt"></i> نعم، احذف
-                </button>
-            </form>
-            <button type="button" onclick="closeCatModal()" class="btn btn-secondary" style="min-width: 100px;">
-                <i class="fas fa-times"></i> إلغاء
-            </button>
-        </div>
-    </div>
-</div>
-
-<script>
-    (function () {
-        var modal = document.getElementById('deleteCatModal');
-
-        document.querySelectorAll('.delete-cat-btn').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                document.getElementById('deleteCatMsg').textContent =
-                    'هل أنت متأكد من حذف قسم \u00ab' + btn.getAttribute('data-cat-name') + '\u00bb\u061f لا يمكن التراجع عن هذه العملية.';
-                document.getElementById('deleteCatForm').setAttribute('action', btn.getAttribute('data-delete-url'));
-                document.getElementById('deleteCatCsrf').value = btn.getAttribute('data-csrf');
-                modal.style.display = 'flex';
-            });
-        });
-
-        window.closeCatModal = function () {
-            modal.style.display = 'none';
-        };
-
-        modal.addEventListener('click', function (e) {
-            if (e.target === modal) closeCatModal();
-        });
-
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') closeCatModal();
-        });
-    }());
-</script>
 {% endblock %}

@@ -79,10 +79,13 @@ def create_app(config_class=Config):
     # Context processor for templates
     @app.context_processor
     def inject_globals():
+        from app.models import Category
+
         return {
             'brand_name': app.config['BRAND_NAME'],
             'brand_year': app.config['BRAND_YEAR'],
             'whatsapp_number': app.config['WHATSAPP_NUMBER'],
+            'footer_categories': Category.query.filter_by(parent_id=None).order_by(Category.sort_order).limit(5).all(),
         }
 
     return app
@@ -91,6 +94,19 @@ def create_app(config_class=Config):
 def _seed_data():
     """Seed initial categories and subcategories (idempotent — safe to run repeatedly)."""
     from app.models import Category, User
+
+    if Category.query.count() > 0:
+        if User.query.first() is None:
+            admin = User(
+                name='مدير النظام',
+                email='admin@sumo.sa',
+                phone='+966558262881',
+                is_admin=True
+            )
+            admin.set_password('admin123')
+            db.session.add(admin)
+            db.session.commit()
+        return
 
     # ── Helper: get or create a category by slug ──────────────────────────────
     def _upsert_category(**kwargs):
@@ -190,7 +206,7 @@ def _seed_data():
         admin = User(
             name='مدير النظام',
             email='admin@sumo.sa',
-            phone='+966500000000',
+            phone='+966558262881',
             is_admin=True
         )
         admin.set_password('admin123')

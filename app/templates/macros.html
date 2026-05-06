@@ -116,14 +116,26 @@
     </div>
 
     <div class="sample-card__body">
-        <h3 class="sample-card__title">{{ sample.title }}</h3>
+        <h3 class="sample-card__title">
+            <a href="{{ url_for('main.sample_detail', sample_id=sample.id) }}" class="sample-card__title-link">
+                {{ sample.title }}
+            </a>
+        </h3>
         <div class="sample-card__actions">
             <a href="{{ url_for('orders.new_order', sample_id=sample.id) }}" class="btn btn-primary btn-sm">
                 <i class="fas fa-cart-plus"></i> اطلب مثل هذا
             </a>
-<a href="https://wa.me/+966558262881?text={{ ('أريد عمل مشابه لـ: ' ~ sample.title ~ ' ' ~ sample.category.name ~ ' ' ~ sample.media_url) | urlencode }}" target="_blank" class="btn btn-whatsapp btn-sm">
-    <i class="fab fa-whatsapp"></i> اطلب الان 
-</a>
+            <a href="https://wa.me/+966558262881?text={{ ('أريد عمل مشابه لـ: ' ~ sample.title ~ ' ' ~ sample.category.name ~ ' ' ~ sample.media_url) | urlencode }}" target="_blank" class="btn btn-whatsapp btn-sm">
+                <i class="fab fa-whatsapp"></i> اطلب الان
+            </a>
+            <button
+                type="button"
+                class="btn btn-outline btn-sm js-share-sample"
+                data-share-path="{{ url_for('main.sample_detail', sample_id=sample.id) }}"
+                data-share-title="{{ sample.title | e }}"
+            >
+                <i class="fas fa-share-nodes"></i> مشاركة
+            </button>
         </div>
     </div>
 </div>
