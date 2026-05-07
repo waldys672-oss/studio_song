@@ -96,6 +96,74 @@
     box-shadow: 0 0 6px var(--accent-glow);
 }
 
+.nav-dropdown {
+    position: relative;
+}
+
+.nav-dropdown__summary {
+    color: var(--text-secondary);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-medium);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+    transition: color var(--transition-fast), background var(--transition-fast);
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.nav-dropdown__summary::-webkit-details-marker {
+    display: none;
+}
+
+.nav-dropdown__summary:hover,
+.nav-dropdown.active .nav-dropdown__summary,
+.nav-dropdown[open] .nav-dropdown__summary {
+    color: var(--accent);
+}
+
+.nav-dropdown__chevron {
+    font-size: 0.7em;
+    transition: transform var(--transition-fast);
+}
+
+.nav-dropdown[open] .nav-dropdown__chevron {
+    transform: rotate(180deg);
+}
+
+.nav-dropdown__menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + var(--space-sm));
+    right: 0;
+    min-width: 220px;
+    max-height: min(70vh, 520px);
+    overflow: auto;
+    padding: var(--space-sm);
+    background: var(--glass-bg-heavy);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.nav-dropdown[open] .nav-dropdown__menu {
+    display: grid;
+    gap: 2px;
+}
+
+.nav-dropdown__menu a {
+    display: block;
+    white-space: nowrap;
+}
+
+.nav-dropdown__menu a.active::after {
+    display: none;
+}
+
 .nav-auth {
     display: flex;
     align-items: center;
@@ -299,6 +367,29 @@
 }
 
 .sample-card__title-link:hover {
+    color: var(--accent);
+}
+
+.sample-card__meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-md);
+    color: var(--text-tertiary);
+    font-size: var(--fs-xs);
+}
+
+.sample-card__meta i {
+    color: var(--accent);
+}
+
+.sample-card__meta a {
+    color: var(--text-secondary);
+    text-decoration: none;
+}
+
+.sample-card__meta a:hover {
     color: var(--accent);
 }
 
@@ -801,6 +892,20 @@ select.form-control {
     padding-left: 2.5rem;
 }
 
+select.form-control[multiple],
+.form-control--multi {
+    min-height: 180px;
+    background-image: none;
+    padding-left: 1.1rem;
+}
+
+.form-help {
+    margin-top: var(--space-xs);
+    margin-bottom: 0;
+    color: var(--text-dim);
+    font-size: var(--fs-sm);
+}
+
 /* ═══════════════════════════════
    ALERT / FLASH MESSAGES
    ═══════════════════════════════ */
@@ -1092,6 +1197,27 @@ select.form-control {
 
     .nav-links a.active::after {
         display: none;
+    }
+
+    .nav-dropdown {
+        width: 100%;
+    }
+
+    .nav-dropdown__summary {
+        width: 100%;
+    }
+
+    .nav-dropdown__menu {
+        position: static;
+        width: 100%;
+        max-height: 42vh;
+        margin-top: var(--space-sm);
+        box-shadow: none;
+        background: var(--bg-elevated);
+    }
+
+    .nav-dropdown__menu a {
+        white-space: normal;
     }
 
     .nav-auth {

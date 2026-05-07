@@ -121,6 +121,14 @@
                 {{ sample.title }}
             </a>
         </h3>
+        {% if sample.singers %}
+        <div class="sample-card__meta">
+            <i class="fas fa-microphone-lines"></i>
+            {% for singer in sample.singers %}
+            <a href="{{ url_for('main.singer', slug=singer.slug) }}">{{ singer.name }}</a>{% if not loop.last %}<span>،</span>{% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
         <div class="sample-card__actions">
             <a href="{{ url_for('orders.new_order', sample_id=sample.id) }}" class="btn btn-primary btn-sm">
                 <i class="fas fa-cart-plus"></i> اطلب مثل هذا

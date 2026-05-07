@@ -21,6 +21,11 @@
                 <div class="stat-card__label">الأقسام</div>
             </div>
             <div class="stat-card animate-on-scroll">
+                <div class="stat-card__icon stat-card__icon--accent"><i class="fas fa-microphone-lines"></i></div>
+                <div class="stat-card__value">{{ total_singers }}</div>
+                <div class="stat-card__label">الفنانين</div>
+            </div>
+            <div class="stat-card animate-on-scroll">
                 <div class="stat-card__icon stat-card__icon--secondary"><i class="fas fa-file-invoice"></i></div>
                 <div class="stat-card__value">{{ total_orders }}</div>
                 <div class="stat-card__label">إجمالي الطلبات</div>
@@ -51,6 +56,7 @@
             <a href="{{ url_for('admin.add_sample') }}" class="btn btn-primary"><i class="fas fa-plus"></i> إضافة عمل جديد</a>
             <a href="{{ url_for('admin.samples') }}" class="btn btn-secondary"><i class="fas fa-compact-disc"></i> إدارة الأعمال</a>
             <a href="{{ url_for('admin.categories') }}" class="btn btn-secondary"><i class="fas fa-folder-tree"></i> إدارة الأقسام</a>
+            <a href="{{ url_for('admin.singers') }}" class="btn btn-secondary"><i class="fas fa-microphone-lines"></i> إدارة الفنانين</a>
             <a href="{{ url_for('admin.orders') }}" class="btn btn-secondary"><i class="fas fa-clipboard-list"></i> إدارة الطلبات</a>
         </div>
 

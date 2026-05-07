@@ -7,15 +7,17 @@ from functools import wraps
 import cloudinary.uploader
 from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
+from sqlalchemy.orm import joinedload, selectinload
 from werkzeug.utils import secure_filename
 
 from app.extensions import db
-from app.models import Category, Order, Sample, TrackingUpdate, User
+from app.models import Category, Order, Sample, Singer, TrackingUpdate, User
 
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
 ALLOWED_EXTENSIONS = {'mp3', 'wav', 'mp4', 'webm', 'ogg', 'm4a', 'jpg', 'jpeg', 'png', 'webp'}
+IMAGE_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
 
 
 def admin_required(f):
@@ -30,8 +32,12 @@ def admin_required(f):
     return decorated_function
 
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+def allowed_file(filename, extensions=ALLOWED_EXTENSIONS):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in extensions
+
+
+def file_has_invalid_extension(file, extensions):
+    return bool(file and file.filename and not allowed_file(file.filename, extensions))
 
 
 def normalize_slug(value):
@@ -48,6 +54,10 @@ def get_parent_categories(exclude_id=None):
 
 def get_sample_categories():
     return Category.query.order_by(Category.parent_id, Category.sort_order, Category.name).all()
+
+
+def get_singers():
+    return Singer.query.order_by(Singer.sort_order, Singer.name).all()
 
 
 def parse_category_form(category=None):
@@ -97,11 +107,57 @@ def parse_category_form(category=None):
     }, errors
 
 
-def save_file(file):
-    if file and file.filename and allowed_file(file.filename):
+def parse_singer_form(singer=None):
+    name = request.form.get('name', '').strip()
+    raw_slug = request.form.get('slug', '').strip()
+    slug = normalize_slug(raw_slug or name)
+    sort_order = request.form.get('sort_order', type=int)
+
+    if sort_order is None:
+        sort_order = 0
+
+    errors = []
+    if not name:
+        errors.append('اسم الفنان مطلوب')
+    if not slug:
+        errors.append('الرابط المختصر مطلوب')
+    else:
+        slug_query = Singer.query.filter_by(slug=slug)
+        if singer is not None:
+            slug_query = slug_query.filter(Singer.id != singer.id)
+        if slug_query.first():
+            errors.append('الرابط المختصر مستخدم بالفعل')
+
+    return {
+        'name': name,
+        'slug': slug,
+        'sort_order': sort_order,
+    }, errors
+
+
+def get_selected_singers():
+    singer_ids = []
+    for raw_id in request.form.getlist('singer_ids'):
+        try:
+            singer_ids.append(int(raw_id))
+        except (TypeError, ValueError):
+            continue
+
+    if not singer_ids:
+        return [], ['اختر فناناً واحداً على الأقل']
+
+    singers = Singer.query.filter(Singer.id.in_(singer_ids)).all()
+    if len(singers) != len(set(singer_ids)):
+        return singers, ['يوجد فنان غير صالح في الاختيار']
+
+    return singers, []
+
+
+def save_file(file, extensions=ALLOWED_EXTENSIONS, resource_type='auto'):
+    if file and file.filename and allowed_file(file.filename, extensions):
         if current_app.config.get('CLOUDINARY_URL'):
             try:
-                upload_result = cloudinary.uploader.upload(file, resource_type='auto')
+                upload_result = cloudinary.uploader.upload(file, resource_type=resource_type)
                 secure_url = upload_result.get('secure_url')
                 if secure_url:
                     return secure_url
@@ -127,6 +183,7 @@ def save_file(file):
 def dashboard():
     total_samples = Sample.query.count()
     total_categories = Category.query.count()
+    total_singers = Singer.query.count()
     total_orders = Order.query.count()
     new_orders = Order.query.filter_by(status='new').count()
     in_progress = Order.query.filter_by(status='in_progress').count()
@@ -138,6 +195,7 @@ def dashboard():
         'admin/dashboard.html',
         total_samples=total_samples,
         total_categories=total_categories,
+        total_singers=total_singers,
         total_orders=total_orders,
         new_orders=new_orders,
         in_progress=in_progress,
@@ -235,16 +293,127 @@ def delete_category(category_id):
     return redirect(url_for('admin.categories'))
 
 
+@admin_bp.route('/singers')
+@admin_required
+def singers():
+    all_singers = get_singers()
+    return render_template('admin/singers.html', singers=all_singers)
+
+
+@admin_bp.route('/singers/add', methods=['GET', 'POST'])
+@admin_required
+def add_singer():
+    if request.method == 'POST':
+        form_data, errors = parse_singer_form()
+        background_file = request.files.get('background_image')
+        if file_has_invalid_extension(background_file, IMAGE_EXTENSIONS):
+            errors.append('صيغة صورة الخلفية غير مدعومة')
+
+        if errors:
+            for error in errors:
+                flash(error, 'error')
+            return render_template('admin/singer_form.html', singer=None)
+
+        background_image = save_file(
+            background_file,
+            extensions=IMAGE_EXTENSIONS,
+            resource_type='image',
+        )
+        singer = Singer(**form_data, background_image=background_image)
+        db.session.add(singer)
+        db.session.commit()
+        flash('تمت إضافة الفنان بنجاح', 'success')
+        return redirect(url_for('admin.singers'))
+
+    return render_template('admin/singer_form.html', singer=None)
+
+
+@admin_bp.route('/singers/<int:singer_id>/edit', methods=['GET', 'POST'])
+@admin_required
+def edit_singer(singer_id):
+    singer = db.session.get(Singer, singer_id)
+    if not singer:
+        flash('الفنان غير موجود', 'error')
+        return redirect(url_for('admin.singers'))
+
+    if request.method == 'POST':
+        form_data, errors = parse_singer_form(singer=singer)
+        background_file = request.files.get('background_image')
+        if file_has_invalid_extension(background_file, IMAGE_EXTENSIONS):
+            errors.append('صيغة صورة الخلفية غير مدعومة')
+
+        if errors:
+            for error in errors:
+                flash(error, 'error')
+            return render_template('admin/singer_form.html', singer=singer)
+
+        new_background = save_file(
+            background_file,
+            extensions=IMAGE_EXTENSIONS,
+            resource_type='image',
+        )
+        singer.name = form_data['name']
+        singer.slug = form_data['slug']
+        singer.sort_order = form_data['sort_order']
+        if new_background:
+            singer.background_image = new_background
+
+        db.session.commit()
+        flash('تم تحديث الفنان بنجاح', 'success')
+        return redirect(url_for('admin.singers'))
+
+    return render_template('admin/singer_form.html', singer=singer)
+
+
+@admin_bp.route('/singers/<int:singer_id>/delete', methods=['POST'])
+@admin_required
+def delete_singer(singer_id):
+    singer = db.session.get(Singer, singer_id)
+    if not singer:
+        flash('الفنان غير موجود', 'error')
+        return redirect(url_for('admin.singers'))
+
+    fallback = Singer.query.filter_by(slug='other-artists').first()
+    if fallback is None and singer.samples.count() > 0:
+        flash('لا يمكن حذف فنان مرتبط بأعمال قبل إضافة فنان بديل', 'error')
+        return redirect(url_for('admin.singers'))
+
+    if singer.slug == 'other-artists':
+        sole_samples = [sample for sample in singer.samples.all() if len(sample.singers) <= 1]
+        if sole_samples:
+            flash('لا يمكن حذف فنانين آخرين لأنه الفنان الوحيد لبعض الأعمال', 'error')
+            return redirect(url_for('admin.singers'))
+
+    for sample in singer.samples.all():
+        if len(sample.singers) <= 1 and fallback is not None and fallback.id != singer.id:
+            sample.singers.append(fallback)
+        if singer in sample.singers:
+            sample.singers.remove(singer)
+
+    db.session.delete(singer)
+    db.session.commit()
+    flash('تم حذف الفنان بنجاح', 'success')
+    return redirect(url_for('admin.singers'))
+
+
 @admin_bp.route('/samples/add', methods=['GET', 'POST'])
 @admin_required
 def add_sample():
     categories = get_sample_categories()
+    singers = get_singers()
     if request.method == 'POST':
         title = request.form.get('title', '').strip()
         category_id = request.form.get('category_id', type=int)
         media_type = request.form.get('media_type', 'youtube')
         is_featured = request.form.get('is_featured') == 'on'
         selected_category = db.session.get(Category, category_id) if category_id else None
+        selected_singers, singer_errors = get_selected_singers()
+
+        if not title or selected_category is None or singer_errors:
+            flash('العنوان والقسم والفنان مطلوبة', 'error')
+            for error in singer_errors:
+                flash(error, 'error')
+            return redirect(request.url)
 
         media_url = ''
         cover_image = None
@@ -255,7 +424,7 @@ def add_sample():
             media_url = save_file(request.files.get('media_file'))
             cover_image = save_file(request.files.get('cover_image'))
 
-        if not title or not media_url or selected_category is None:
+        if not media_url:
             flash('العنوان والقسم والملف أو الرابط مطلوبة', 'error')
             return redirect(request.url)
 
@@ -267,12 +436,13 @@ def add_sample():
             cover_image=cover_image,
             is_featured=is_featured,
         )
+        sample.singers = selected_singers
         db.session.add(sample)
         db.session.commit()
         flash('تمت إضافة العمل بنجاح', 'success')
         return redirect(url_for('admin.samples'))
 
-    return render_template('admin/sample_form.html', categories=categories, sample=None)
+    return render_template('admin/sample_form.html', categories=categories, singers=singers, sample=None)
 
 
 @admin_bp.route('/samples/<int:sample_id>/edit', methods=['GET', 'POST'])
@@ -284,6 +454,7 @@ def edit_sample(sample_id):
         return redirect(url_for('admin.samples'))
 
     categories = get_sample_categories()
+    singers = get_singers()
 
     if request.method == 'POST':
         category_id = request.form.get('category_id', type=int)
@@ -291,15 +462,28 @@ def edit_sample(sample_id):
         if selected_category is None:
             flash('القسم غير موجود', 'error')
             return redirect(request.url)
+        selected_singers, singer_errors = get_selected_singers()
+        if singer_errors:
+            for error in singer_errors:
+                flash(error, 'error')
+            return redirect(request.url)
 
         sample.title = request.form.get('title', '').strip()
+        if not sample.title:
+            flash('العنوان مطلوب', 'error')
+            return redirect(request.url)
+
         sample.category_id = selected_category.id
+        sample.singers = selected_singers
         sample.is_featured = request.form.get('is_featured') == 'on'
         media_type = request.form.get('media_type', 'youtube')
 
         if media_type == 'youtube':
             sample.media_type = 'youtube'
             sample.media_url = request.form.get('youtube_url', '').strip()
+            if not sample.media_url:
+                flash('رابط YouTube مطلوب', 'error')
+                return redirect(request.url)
         else:
             new_media = save_file(request.files.get('media_file'))
             if new_media:
@@ -314,7 +498,7 @@ def edit_sample(sample_id):
         flash('تم تحديث العمل بنجاح', 'success')
         return redirect(url_for('admin.samples'))
 
-    return render_template('admin/sample_form.html', categories=categories, sample=sample)
+    return render_template('admin/sample_form.html', categories=categories, singers=singers, sample=sample)
 
 
 @admin_bp.route('/samples/<int:sample_id>/delete', methods=['POST'])
@@ -340,7 +524,11 @@ def delete_sample(sample_id):
 @admin_bp.route('/samples')
 @admin_required
 def samples():
-    all_samples = Sample.query.order_by(Sample.created_at.desc()).all()
+    all_samples = (
+        Sample.query.options(joinedload(Sample.category), selectinload(Sample.singers))
+        .order_by(Sample.created_at.desc())
+        .all()
+    )
     return render_template('admin/samples.html', samples=all_samples)
 
 

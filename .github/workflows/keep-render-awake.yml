@@ -1,0 +1,17 @@
+name: Keep Render Awake
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Ping health endpoint
+        env:
+          HEALTH_URL: ${{ vars.RENDER_HEALTH_URL || 'https://studio-song.onrender.com/healthz' }}
+        run: |
+          curl --fail --silent --show-error --max-time 45 "$HEALTH_URL"

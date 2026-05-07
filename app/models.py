@@ -3,6 +3,14 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from app.extensions import db
 
+
+sample_singers = db.Table(
+    'sample_singers',
+    db.Column('sample_id', db.Integer, db.ForeignKey('samples.id'), primary_key=True),
+    db.Column('singer_id', db.Integer, db.ForeignKey('singers.id'), primary_key=True),
+)
+
+
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
 
@@ -57,6 +65,27 @@ class Category(db.Model):
         return self.parent_id is not None
 
 
+class Singer(db.Model):
+    __tablename__ = 'singers'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    slug = db.Column(db.String(120), unique=True, nullable=False)
+    background_image = db.Column(db.String(500), nullable=True)
+    sort_order = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    samples = db.relationship(
+        'Sample',
+        secondary=sample_singers,
+        back_populates='singers',
+        lazy='dynamic',
+    )
+
+    def __repr__(self):
+        return f'<Singer {self.name}>'
+
+
 class Sample(db.Model):
     __tablename__ = 'samples'
 
@@ -69,6 +98,13 @@ class Sample(db.Model):
     cover_image = db.Column(db.String(500), nullable=True) 
     is_featured = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    singers = db.relationship(
+        'Singer',
+        secondary=sample_singers,
+        back_populates='samples',
+        order_by='Singer.sort_order, Singer.name',
+    )
 
     def get_youtube_embed_id(self):
         url = self.media_url

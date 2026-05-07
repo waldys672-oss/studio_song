@@ -1,10 +1,15 @@
 from flask import Blueprint, abort, render_template, request
 from sqlalchemy import or_
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
-from app.models import Category, Sample
+from app.models import Category, Sample, Singer
 
 main_bp = Blueprint('main', __name__)
+
+
+@main_bp.get('/healthz')
+def healthz():
+    return 'ok', 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
 
 @main_bp.route('/')
@@ -12,7 +17,10 @@ def index():
     search_query = request.args.get('q', '').strip()
     main_categories = Category.query.filter_by(parent_id=None).order_by(Category.sort_order).all()
 
-    sample_query = Sample.query.options(joinedload(Sample.category).joinedload(Category.parent))
+    sample_query = Sample.query.options(
+        joinedload(Sample.category).joinedload(Category.parent),
+        selectinload(Sample.singers),
+    )
     if search_query:
         sample_query = sample_query.filter(Sample.title.ilike(f'%{search_query}%')).order_by(
             Sample.is_featured.desc(),
@@ -33,7 +41,10 @@ def index():
 @main_bp.route('/sample/<int:sample_id>')
 def sample_detail(sample_id):
     sample = (
-        Sample.query.options(joinedload(Sample.category).joinedload(Category.parent))
+        Sample.query.options(
+            joinedload(Sample.category).joinedload(Category.parent),
+            selectinload(Sample.singers),
+        )
         .filter_by(id=sample_id)
         .first()
     )
@@ -52,7 +63,10 @@ def category(slug):
 
     sample_query = (
         Sample.query.join(Category, Sample.category_id == Category.id)
-        .options(joinedload(Sample.category).joinedload(Category.parent))
+        .options(
+            joinedload(Sample.category).joinedload(Category.parent),
+            selectinload(Sample.singers),
+        )
         .order_by(Sample.created_at.desc())
     )
     if cat.parent_id is None:
@@ -64,6 +78,22 @@ def category(slug):
     categories = Category.query.order_by(Category.sort_order).all()
 
     return render_template('category.html', category=cat, samples=samples, categories=categories)
+
+
+@main_bp.route('/singer/<slug>')
+def singer(slug):
+    singer = Singer.query.filter_by(slug=slug).first_or_404()
+    samples = (
+        singer.samples.options(
+            joinedload(Sample.category).joinedload(Category.parent),
+            selectinload(Sample.singers),
+        )
+        .order_by(Sample.created_at.desc())
+        .all()
+    )
+    categories = Category.query.filter_by(parent_id=None).order_by(Category.sort_order, Category.name).all()
+
+    return render_template('singer.html', singer=singer, samples=samples, categories=categories)
 
 
 @main_bp.route('/about')

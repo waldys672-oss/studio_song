@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% from "macros.html" import back_to_home, sample_card %}
+
+{% block title %}{{ singer.name }}{% endblock %}
+
+{% block content %}
+{% set singer_bg = singer.background_image %}
+{% if singer_bg and not singer_bg.startswith('http://') and not singer_bg.startswith('https://') %}
+    {% set singer_bg = url_for('static', filename='uploads/' + singer_bg) %}
+{% elif not singer_bg %}
+    {% set singer_bg = url_for('static', filename='img/home-hero.png') %}
+{% endif %}
+
+<div class="singer-page" style="--singer-bg-image: url('{{ singer_bg }}');">
+    <section class="singer-hero">
+        <div class="container">
+            <div class="singer-hero__content animate-on-scroll">
+                <span class="singer-hero__eyebrow"><i class="fas fa-microphone-lines"></i> أعمال الفنان</span>
+                <h1>{{ singer.name }}</h1>
+                <p>{{ samples|length }} .</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="singer-filter-section">
+        <div class="container">
+            {% if samples %}
+            <div class="main-filter-row animate-on-scroll">
+                <button class="filter-btn active btn btn-sm btn-primary" data-filter="all">الكل</button>
+                {% for cat in categories %}
+                <button class="filter-btn btn btn-sm btn-ghost main-cat-btn" data-filter="{{ cat.slug }}" data-target-sub="singer-sub-{{ cat.slug }}">
+                    {{ cat.name }}
+                </button>
+                {% endfor %}
+            </div>
+
+            <div class="sub-filter-container animate-on-scroll">
+                {% for cat in categories %}
+                    {% if cat.subcategories.count() > 0 %}
+                    <div class="sub-filter-row" id="singer-sub-{{ cat.slug }}">
+                        {% for sub in cat.subcategories %}
+                        <button class="sub-filter-btn btn btn-sm btn-ghost" data-filter="{{ sub.slug }}">
+                            {{ sub.name }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="section singer-samples-section">
+        <div class="container">
+            <div class="samples-grid" id="samples-container">
+                {% if samples %}
+                    {% for sample in samples %}
+                    {{ sample_card(sample, whatsapp_number) }}
+                    {% endfor %}
+                {% else %}
+                    <div class="samples-empty">
+                        <div class="samples-empty__icon"><i class="fas fa-microphone-lines"></i></div>
+                        <p>لا توجد أعمال مرتبطة بهذا الفنان حالياً.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    {{ back_to_home() }}
+</div>
+{% endblock %}

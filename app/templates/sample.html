@@ -18,6 +18,15 @@
                 {{ sample.category.name }}
             </a>
             {% endif %}
+            {% if sample.singers %}
+            <br>
+            <span style="color: var(--text-tertiary);">الفنان:</span>
+            {% for singer in sample.singers %}
+            <a href="{{ url_for('main.singer', slug=singer.slug) }}" style="color: var(--accent); text-decoration: none;">
+                {{ singer.name }}
+            </a>{% if not loop.last %}<span style="color: var(--text-dim);">،</span>{% endif %}
+            {% endfor %}
+            {% endif %}
         </p>
     </div>
 </section>

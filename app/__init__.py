@@ -79,13 +79,14 @@ def create_app(config_class=Config):
     # Context processor for templates
     @app.context_processor
     def inject_globals():
-        from app.models import Category
+        from app.models import Category, Singer
 
         return {
             'brand_name': app.config['BRAND_NAME'],
             'brand_year': app.config['BRAND_YEAR'],
             'whatsapp_number': app.config['WHATSAPP_NUMBER'],
             'footer_categories': Category.query.filter_by(parent_id=None).order_by(Category.sort_order).limit(5).all(),
+            'nav_singers': Singer.query.order_by(Singer.sort_order, Singer.name).all(),
         }
 
     return app
@@ -93,9 +94,9 @@ def create_app(config_class=Config):
 
 def _seed_data():
     """Seed initial categories and subcategories (idempotent — safe to run repeatedly)."""
-    from app.models import Category, User
+    from app.models import Category, Sample, Singer, User
 
-    if Category.query.count() > 0:
+    def _seed_default_admin():
         if User.query.first() is None:
             admin = User(
                 name='مدير النظام',
@@ -106,6 +107,51 @@ def _seed_data():
             admin.set_password('admin123')
             db.session.add(admin)
             db.session.commit()
+
+    def _seed_singers():
+        singers = [
+            ('اسماء المنور', 'asma-lmnawar', 1),
+            ('احلام', 'ahlam', 2),
+            ('اميمه طالب', 'omeima-taleb', 3),
+            ('بلقيس فتحي', 'balqees-fathi', 4),
+            ('هند البحرينيه', 'hend-albahrainia', 5),
+            ('محمد عبده', 'mohammed-abdu', 6),
+            ('راشد الماجد', 'rashed-almajed', 7),
+            ('عبد المجيد عبد الله', 'abdul-majeed-abdullah', 8),
+            ('ماجد المهندس', 'majid-almohandis', 9),
+            ('حسين الجسمي', 'hussain-aljassmi', 10),
+            ('راشد الفارس', 'rashed-alfaris', 11),
+            ('فهد الكبيسي', 'fahad-alkubaisi', 12),
+            ('رابح صقر', 'rabeh-saqer', 13),
+            ('فؤاد عبد الواحد', 'fouad-abdulwahed', 14),
+            ('فايز السعيد', 'fayez-alsaeed', 15),
+            ('فنانين آخرين', 'other-artists', 99),
+        ]
+
+        other_singer = None
+        for name, slug, sort_order in singers:
+            singer = Singer.query.filter_by(slug=slug).first()
+            if singer is None:
+                singer = Singer(name=name, slug=slug, sort_order=sort_order)
+                db.session.add(singer)
+            else:
+                singer.name = name
+                singer.sort_order = sort_order
+            if slug == 'other-artists':
+                other_singer = singer
+
+        db.session.flush()
+
+        if other_singer is not None:
+            for sample in Sample.query.all():
+                if not sample.singers:
+                    sample.singers.append(other_singer)
+
+        db.session.commit()
+
+    if Category.query.count() > 0:
+        _seed_default_admin()
+        _seed_singers()
         return
 
     # ── Helper: get or create a category by slug ──────────────────────────────
@@ -202,13 +248,5 @@ def _seed_data():
     db.session.commit()
 
     # ── 7. Default admin ───────────────────────────────────────────────────────
-    if User.query.first() is None:
-        admin = User(
-            name='مدير النظام',
-            email='admin@sumo.sa',
-            phone='+966558262881',
-            is_admin=True
-        )
-        admin.set_password('admin123')
-        db.session.add(admin)
-        db.session.commit()
+    _seed_default_admin()
+    _seed_singers()

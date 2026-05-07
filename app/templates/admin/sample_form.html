@@ -30,6 +30,19 @@
                 </div>
 
                 <div class="form-group">
+                    <label class="form-label" for="singer_ids"><i class="fas fa-microphone-lines"></i> الفنانين *</label>
+                    <select class="form-control form-control--multi" id="singer_ids" name="singer_ids" multiple required size="8">
+                        {% set selected_singer_ids = sample.singers | map(attribute='id') | list if sample else [] %}
+                        {% for singer in singers %}
+                            <option value="{{ singer.id }}" {% if singer.id in selected_singer_ids %}selected{% endif %}>
+                                {{ singer.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <p class="form-help">يمكن اختيار أكثر من فنان بالضغط على Ctrl أو Shift أثناء الاختيار.</p>
+                </div>
+
+                <div class="form-group">
                     <label class="form-label">نوع الوسائط *</label>
                     <div style="display: flex; gap: 20px;">
                         <label><input type="radio" name="media_type" value="youtube" id="mediaYoutube" {% if not sample or sample.media_type == 'youtube' %}checked{% endif %} onchange="toggleInputs()"> YouTube</label>

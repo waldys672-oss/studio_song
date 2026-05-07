@@ -39,6 +39,19 @@
                     <i class="fas fa-home"></i> الرئيسية
                 </a>
 
+                <details class="nav-dropdown {% if request.endpoint == 'main.singer' %}active{% endif %}">
+                    <summary class="nav-dropdown__summary">
+                        <i class="fas fa-microphone-lines"></i> الفنانين
+                        <i class="fas fa-chevron-down nav-dropdown__chevron"></i>
+                    </summary>
+                    <div class="nav-dropdown__menu">
+                        {% for singer in nav_singers %}
+                        <a href="{{ url_for('main.singer', slug=singer.slug) }}" class="{% if request.endpoint == 'main.singer' and request.view_args and request.view_args.get('slug') == singer.slug %}active{% endif %}">
+                            {{ singer.name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </details>
 
                 <a href="{{ url_for('main.about') }}" class="{% if request.endpoint == 'main.about' %}active{% endif %}">
                     <i class="fas fa-info-circle"></i> من نحن

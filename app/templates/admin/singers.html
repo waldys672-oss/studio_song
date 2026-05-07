@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}إدارة الفنانين{% endblock %}
+
+{% block content %}
+<section class="admin-page">
+    <div class="container">
+        <div class="dashboard-header">
+            <h1><i class="fas fa-microphone-lines"></i> إدارة <span class="accent-text">الفنانين</span></h1>
+            <a href="{{ url_for('admin.add_singer') }}" class="btn btn-primary"><i class="fas fa-plus"></i> إضافة فنان</a>
+        </div>
+
+        <div class="admin-table-wrapper animate-on-scroll">
+            {% if singers %}
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>الصورة</th>
+                        <th>الاسم</th>
+                        <th>الرابط</th>
+                        <th>الأعمال</th>
+                        <th>الترتيب</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for singer in singers %}
+                    {% set bg = singer.background_image %}
+                    {% if bg and not bg.startswith('http://') and not bg.startswith('https://') %}
+                        {% set bg = url_for('static', filename='uploads/' + bg) %}
+                    {% endif %}
+                    <tr>
+                        <td>{{ singer.id }}</td>
+                        <td>
+                            {% if bg %}
+                            <img src="{{ bg }}" alt="{{ singer.name }}" class="admin-image-thumb">
+                            {% else %}
+                            <span class="admin-image-thumb admin-image-thumb--empty"><i class="fas fa-image"></i></span>
+                            {% endif %}
+                        </td>
+                        <td>{{ singer.name }}</td>
+                        <td><code dir="ltr">{{ singer.slug }}</code></td>
+                        <td>{{ singer.samples.count() }}</td>
+                        <td>{{ singer.sort_order }}</td>
+                        <td>
+                            <div class="admin-table-actions">
+                                <a href="{{ url_for('main.singer', slug=singer.slug) }}" class="btn btn-sm btn-outline"><i class="fas fa-eye"></i> عرض</a>
+                                <a href="{{ url_for('admin.edit_singer', singer_id=singer.id) }}" class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i> تعديل</a>
+                                <form method="POST" action="{{ url_for('admin.delete_singer', singer_id=singer.id) }}" style="display: inline;" onsubmit="return confirm('هل أنت متأكد من حذف هذا الفنان؟')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-outline" style="color: var(--error); border-color: var(--error);"><i class="fas fa-trash-alt"></i> حذف</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="samples-empty">
+                <div class="samples-empty__icon"><i class="fas fa-microphone-lines"></i></div>
+                <p>لا يوجد فنانين حتى الآن.</p>
+                <a href="{{ url_for('admin.add_singer') }}" class="btn btn-primary" style="margin-top: var(--space-lg);"><i class="fas fa-plus"></i> أضف أول فنان</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

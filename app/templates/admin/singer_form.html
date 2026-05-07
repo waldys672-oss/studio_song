@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'تعديل فنان' if singer else 'إضافة فنان' }}{% endblock %}
+
+{% block content %}
+<section class="order-page">
+    <div class="container">
+        <div class="order-form-card animate-on-scroll">
+            <h1>
+                <i class="fas {{ 'fa-edit' if singer else 'fa-plus-circle' }}" style="color: var(--accent); font-size: 0.8em;"></i>
+                {{ 'تعديل' if singer else 'إضافة' }} <span class="accent-text">فنان</span>
+            </h1>
+
+            <form method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="form-group">
+                    <label class="form-label" for="name"><i class="fas fa-microphone-lines"></i> اسم الفنان *</label>
+                    <input type="text" class="form-control" id="name" name="name" required value="{{ request.form.get('name', singer.name if singer else '') }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="slug"><i class="fas fa-link"></i> الرابط المختصر *</label>
+                    <input type="text" class="form-control" id="slug" name="slug" dir="ltr" required value="{{ request.form.get('slug', singer.slug if singer else '') }}">
+                    <p class="form-help">يستخدم في رابط صفحة الفنان، مثل: mohammed-abdu.</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="sort_order"><i class="fas fa-arrow-down-short-wide"></i> الترتيب</label>
+                    <input type="number" class="form-control" id="sort_order" name="sort_order" value="{{ request.form.get('sort_order', singer.sort_order if singer else 0) }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="background_image"><i class="fas fa-image"></i> صورة الخلفية</label>
+                    <input type="file" class="form-control" id="background_image" name="background_image" accept="image/*">
+                    <p class="form-help">الصورة ستظهر كخلفية كاملة لصفحة الفنان.</p>
+                </div>
+
+                {% if singer and singer.background_image %}
+                    {% set bg = singer.background_image %}
+                    {% if not bg.startswith('http://') and not bg.startswith('https://') %}
+                        {% set bg = url_for('static', filename='uploads/' + bg) %}
+                    {% endif %}
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-eye"></i> الخلفية الحالية</label>
+                        <img src="{{ bg }}" alt="{{ singer.name }}" class="admin-image-preview">
+                    </div>
+                {% endif %}
+
+                <div style="display: flex; gap: var(--space-sm); flex-wrap: wrap;">
+                    <button type="submit" class="btn btn-primary">{{ 'حفظ التعديلات' if singer else 'إضافة الفنان' }}</button>
+                    <a href="{{ url_for('admin.singers') }}" class="btn btn-ghost">رجوع</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
