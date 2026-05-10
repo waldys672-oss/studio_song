@@ -1108,7 +1108,7 @@ select.form-control[multiple],
 }
 /*****************************/
 /* حاوية المشغل المخصص */
-.custom-player-wrapper {
+/* .custom-player-wrapper {
     position: absolute;
     top: 0;
     left: 0;
@@ -1119,10 +1119,10 @@ select.form-control[multiple],
     justify-content: center;
     cursor: pointer;
     z-index: 5;
-}
+} */
 
 /* طبقة التعتيم الخفيفة فوق الصورة */
-.play-overlay {
+/* .play-overlay {
     position: absolute;
     inset: 0;
     background: rgba(0, 0, 0, 0.2);
@@ -1130,17 +1130,17 @@ select.form-control[multiple],
     align-items: center;
     justify-content: center;
     transition: background 0.3s ease;
-}
+} */
 
-.custom-player-wrapper:hover .play-overlay {
+/* .custom-player-wrapper:hover .play-overlay {
     background: rgba(0, 0, 0, 0.4);
-}
+} */
 
 /* زر التشغيل - ستايل يوتيوب */
-.play-button-yt {
+/* .play-button-yt {
     width: 68px;
     height: 48px;
-    background-color: rgba(33, 33, 33, 0.8); /* لون داكن شبه شفاف */
+    background-color: rgba(33, 33, 33, 0.8); 
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -1148,22 +1148,21 @@ select.form-control[multiple],
     color: white;
     font-size: 20px;
     transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
+} */
 
 /* عند تمرير الماوس يتغير اللون للأحمر مثل يوتيوب */
-.custom-player-wrapper:hover .play-button-yt {
+/* .custom-player-wrapper:hover .play-button-yt {
     background-color: #ff0000;
-}
+} */
 
 /* إخفاء الزر عند تشغيل المقطع */
-.custom-player-wrapper.is-playing .play-overlay {
+/* .custom-player-wrapper.is-playing .play-overlay {
     opacity: 0;
     pointer-events: none;
-}
+} */
 
-.audio-element {
-    display: none; /* الفيديو نفسه مخفي، نحتاج فقط صوته */
-}
+/* .audio-element {
+    display: none; 
 /* ═══════════════════════════════
    RESPONSIVE — Mobile
    ═══════════════════════════════ */
@@ -1276,32 +1275,32 @@ select.form-control[multiple],
 }
 
 /* Container for the media */
-.sample-card__media {
+/* .sample-card__media {
     position: relative;
     width: 100%;
-    aspect-ratio: 16 / 9; /* This ensures the box has height even if the image is missing */
+    aspect-ratio: 16 / 9;This ensures the box has height even if the image is missing 
     background-color: var(--bg-elevated);
     overflow: hidden;
-}
+} */
 
 /* Background Image logic for uploads */
-.media-upload-bg {
-    background-size: cover;    /* Fills the box completely */
-    background-position: center; /* Centers the focal point */
+/* .media-upload-bg {
+    background-size: cover;   
+    background-position: center; 
     background-repeat: no-repeat;
-}
+} */
 
 /* Hide the black video box but keep the audio functional */
-.audio-element {
+/* .audio-element {
     width: 100%;
     height: 100%;
     background: transparent !important;
     object-fit: cover;
-    opacity: 0; /* Keeps the video invisible so the background image shows */
-}
+    opacity: 0; 
+} */
 
 /* Ensure the player wrapper covers the whole background */
-.custom-player-wrapper {
+/* .custom-player-wrapper {
     position: absolute;
     top: 0;
     left: 0;
@@ -1311,4 +1310,4 @@ select.form-control[multiple],
     align-items: center;
     justify-content: center;
     z-index: 2;
-}
+} */

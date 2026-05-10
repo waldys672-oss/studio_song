@@ -96,23 +96,23 @@
         {% if sample.media_type == 'youtube' %}
             <iframe src="https://www.youtube.com/embed/{{ sample.get_youtube_embed_id() }}"
                     title="{{ sample.title }}" allowfullscreen loading="lazy"></iframe>
-        {% elif sample.media_type == 'upload' %}
-            {% set media_src = sample.media_url %}
-            {% if media_src and not media_src.startswith('http://') and not media_src.startswith('https://') %}
-                {% set media_src = url_for('static', filename='uploads/' + media_src) %}
-            {% endif %}
-            <div class="custom-player-wrapper" onclick="togglePlay(this)">
-                {# Keep the video tag for audio, but make it transparent #}
-                <video class="audio-element" preload="none">
-                    <source src="{{ media_src }}">
-                </video>
-                <div class="play-overlay">
-                    <div class="play-button-yt">
-                        <i class="fas fa-play"></i>
-                    </div>
-                </div>
+    {% elif sample.media_type == 'upload' %}
+    {% set media_src = sample.media_url %}
+    {% if media_src and not media_src.startswith('http://') and not media_src.startswith('https://') %}
+        {% set media_src = url_for('static', filename='uploads/' + media_src) %}
+    {% endif %}
+    <div class="custom-player-wrapper" onclick="togglePlay(this)">        
+        <audio class="audio-element" preload="none">
+            <source src="{{ media_src }}">
+            Your browser does not support audio playback.
+        </audio>
+        <div class="play-overlay">
+            <div class="play-button-yt">
+                <i class="fas fa-play"></i>
             </div>
-        {% endif %}
+        </div>
+    </div>
+{% endif %}
     </div>
 
     <div class="sample-card__body">
@@ -133,7 +133,7 @@
             <a href="{{ url_for('orders.new_order', sample_id=sample.id) }}" class="btn btn-primary btn-sm">
                 <i class="fas fa-cart-plus"></i> اطلب مثل هذا
             </a>
-            <a href="https://wa.me/+966558262881?text={{ ('أريد عمل مشابه لـ: ' ~ sample.title ~ ' ' ~ sample.category.name ~ ' ' ~ sample.media_url) | urlencode }}" target="_blank" class="btn btn-whatsapp btn-sm">
+            <a href="https://wa.me/+966558262881?text={{ ('عمل مشابه لـ: ' ~ sample.title ~ ' ' ~ sample.category.name ~ ' ' ~ sample.media_url) | urlencode }}" target="_blank" class="btn btn-whatsapp btn-sm">
                 <i class="fab fa-whatsapp"></i> اطلب الان
             </a>
             <button
