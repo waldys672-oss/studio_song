@@ -90,30 +90,50 @@
     {% if cover_src and not cover_src.startswith('http://') and not cover_src.startswith('https://') %}
         {% set cover_src = url_for('static', filename='uploads/' + cover_src) %}
     {% endif %}
-    <div class="sample-card__media {% if sample.media_type == 'upload' %}media-upload-bg{% endif %}"
-         style="{% if sample.media_type == 'upload' and cover_src %}background-image: url('{{ cover_src }}');{% endif %}">
-        
-        {% if sample.media_type == 'youtube' %}
+    {% if sample.media_type == 'youtube' %}
+    <div class="sample-card__media">
             <iframe src="https://www.youtube.com/embed/{{ sample.get_youtube_embed_id() }}"
                     title="{{ sample.title }}" allowfullscreen loading="lazy"></iframe>
+    </div>
     {% elif sample.media_type == 'upload' %}
     {% set media_src = sample.media_url %}
     {% if media_src and not media_src.startswith('http://') and not media_src.startswith('https://') %}
         {% set media_src = url_for('static', filename='uploads/' + media_src) %}
     {% endif %}
-    <div class="custom-player-wrapper" onclick="togglePlay(this)">        
-        <audio class="audio-element" preload="none">
+    <div class="smo-player" data-src="{{ media_src }}">
+        <audio class="smo-player__audio" preload="auto">
             <source src="{{ media_src }}">
-            Your browser does not support audio playback.
         </audio>
-        <div class="play-overlay">
-            <div class="play-button-yt">
+        <div class="smo-player__inner">
+            {# ── Waveform visualizer bar ── #}
+            <div class="smo-player__viz">
+                <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            {# ── Play / Pause ── #}
+            <button type="button" class="smo-player__play" aria-label="تشغيل / إيقاف">
                 <i class="fas fa-play"></i>
+            </button>
+            {# ── Time + Progress ── #}
+            <div class="smo-player__track">
+                <div class="smo-player__times">
+                    <span class="smo-player__current">0:00</span>
+                    <span class="smo-player__duration">0:00</span>
+                </div>
+                <div class="smo-player__progress">
+                    <div class="smo-player__progress-fill"></div>
+                    <input type="range" class="smo-player__scrubber" min="0" max="100" value="0" step="0.1" aria-label="شريط التقدم">
+                </div>
+            </div>
+            {# ── Volume ── #}
+            <div class="smo-player__vol">
+                <button type="button" class="smo-player__vol-btn" aria-label="كتم الصوت">
+                    <i class="fas fa-volume-high"></i>
+                </button>
+                <input type="range" class="smo-player__vol-slider" min="0" max="1" value="1" step="0.01" aria-label="مستوى الصوت">
             </div>
         </div>
     </div>
-{% endif %}
-    </div>
+    {% endif %}
 
     <div class="sample-card__body">
         <h3 class="sample-card__title">

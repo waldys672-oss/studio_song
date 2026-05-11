@@ -1,10 +1,7 @@
 import os
 from app import create_app
-
 from whitenoise import WhiteNoise
-
 app = create_app()
-
 
 # Wrap your app with WhiteNoise for lightning-fast static file serving
 # This caches your CSS and JS so they load instantly after the first visit

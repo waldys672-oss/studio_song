@@ -315,10 +315,13 @@
     overflow: hidden;
     transition: all var(--transition-base);
     box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .sample-card:hover {
-    transform: translateY(-8px);
+    transform: translateY(-6px);
     box-shadow: var(--shadow-card-hover);
     border-color: var(--accent-20);
 }
@@ -326,7 +329,7 @@
 .sample-card__media {
     position: relative;
     width: 100%;
-    aspect-ratio: 16 / 9;
+    height: 160px;
     background: var(--bg-elevated);
     overflow: hidden;
 }
@@ -339,25 +342,17 @@
     border: none;
 }
 
-.sample-card__media-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, var(--bg-elevated) 0%, var(--bg-card) 100%);
-    color: var(--accent);
-    font-size: 2.5rem;
-}
-
 .sample-card__body {
-    padding: var(--space-lg);
+    padding: var(--space-md) var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
 .sample-card__title {
-    font-size: var(--fs-md);
+    font-size: var(--fs-sm);
     font-weight: var(--fw-bold);
-    margin-bottom: var(--space-md);
+    margin-bottom: var(--space-sm);
     color: var(--text-primary);
 }
 
@@ -375,7 +370,7 @@
     align-items: center;
     flex-wrap: wrap;
     gap: var(--space-xs);
-    margin-bottom: var(--space-md);
+    margin-bottom: var(--space-sm);
     color: var(--text-tertiary);
     font-size: var(--fs-xs);
 }
@@ -397,126 +392,282 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-sm);
+    margin-top: auto;
 }
 
 .sample-card__actions .btn {
     flex: 1;
-    min-width: 110px;
+    min-width: 100px;
     font-size: var(--fs-xs);
-    padding: 0.55rem 0.6rem;
+    padding: 0.45rem 0.5rem;
 }
 
-
-
-
-
-
-
-/* تنسيق الصورة داخل الكارت */
-.sample-card__media img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* تجعل الصورة تملاً المساحة بدون تشويه */
-    display: block;
-}
-
-/* تنسيق مشغل الصوت عندما يكون فوق صورة */
-.sample-card__audio-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: rgba(0, 0, 0, 0.5); /* تعتيم خلف المشغل ليظهر بوضوح */
-    backdrop-filter: blur(5px); /* تأثير زجاجي */
-    padding: 10px;
-    display: flex;
-    align-items: center;
-}
-
-.sample-card__audio-overlay audio {
-    width: 100%;
-    height: 30px; /* تصغير حجم المشغل ليناسب الكارت */
-}
-
-/* في حال لم توجد صورة، نستخدم لون متدرج جذاب */
-.audio-placeholder {
-    background: linear-gradient(45deg, var(--bg-elevated), var(--accent-20));
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.sample-card__media {
+/* ═══════════════════════════════
+   SMO AUDIO PLAYER
+   ═══════════════════════════════ */
+.smo-player {
+    background: linear-gradient(135deg, var(--bg-elevated) 0%, rgba(26, 32, 53, 0.95) 100%);
+    border-bottom: 1px solid var(--bg-border);
+    padding: var(--space-md) var(--space-lg);
     position: relative;
-    aspect-ratio: 16 / 9; /* توحيد المقاس مع اليوتيوب */
-    background: #000;
-    overflow: hidden;
-}
-.cover-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0.7; /* تعتيم قليل ليبرز المشغل */
-}
-.audio-player-container {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    right: 10px;
-}
-audio { width: 100%; height: 35px; }
-
-/**************************/
-/* ضبط حاوية الميديا لتكون بنسبة 16:9 دائماً */
-.sample-card__media {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    background: #000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     overflow: hidden;
 }
 
-/* تنسيق صورة الغلاف */
-.sample-card__cover {
+.smo-player::before {
+    content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: 1;
-    opacity: 0.8; /* تعتيم خفيف ليبرز المشغل */
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent-20), transparent);
 }
 
-/* حاوية المشغل */
-.sample-card__audio-wrapper {
-    position: relative;
-    z-index: 2;
-    width: 100%;
-    padding: 0 10px;
+.smo-player__inner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
 }
 
-/* إذا كان هناك صورة غلاف، نجعل المشغل في الأسفل */
-.sample-card__audio-wrapper.has-cover {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    background: linear-gradient(transparent, rgba(0,0,0,0.8));
-    padding: 20px 10px 10px;
+/* ── Waveform visualizer ── */
+.smo-player__viz {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    height: 28px;
+    flex-shrink: 0;
 }
 
-.sample-card__media video {
-    width: 100%;
-    max-height: 100%;
+.smo-player__viz span {
     display: block;
+    width: 3px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background: var(--accent-20);
+    transition: height 0.15s ease, background 0.2s ease;
 }
 
-/* لإخفاء خلفية الفيديو السوداء إذا كان ملفاً صوتياً */
-video:not([width]):not([height]) {
-    height: 45px; /* ارتفاع مناسب للمشغل الصوتي فقط */
+.smo-player.is-playing .smo-player__viz span {
+    background: var(--accent);
+    animation: smo-wave 0.8s ease-in-out infinite alternate;
 }
+
+.smo-player.is-playing .smo-player__viz span:nth-child(1) { animation-delay: 0s;    height: 18px; }
+.smo-player.is-playing .smo-player__viz span:nth-child(2) { animation-delay: 0.12s; height: 24px; }
+.smo-player.is-playing .smo-player__viz span:nth-child(3) { animation-delay: 0.24s; height: 14px; }
+.smo-player.is-playing .smo-player__viz span:nth-child(4) { animation-delay: 0.36s; height: 20px; }
+.smo-player.is-playing .smo-player__viz span:nth-child(5) { animation-delay: 0.1s;  height: 12px; }
+
+@keyframes smo-wave {
+    0%   { height: 6px;  }
+    50%  { height: 22px; }
+    100% { height: 10px; }
+}
+
+/* ── Play / Pause Button ── */
+.smo-player__play {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    background: var(--gradient-accent-btn);
+    color: var(--bg-base);
+    box-shadow: 0 2px 12px var(--accent-glow);
+    transition: all var(--transition-base);
+}
+
+.smo-player__play:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 20px var(--accent-glow);
+}
+
+.smo-player__play:active {
+    transform: scale(0.95);
+}
+
+/* ── Track area (times + progress) ── */
+.smo-player__track {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.smo-player__times {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    font-weight: var(--fw-medium);
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+    direction: ltr;
+}
+
+/* Progress bar container */
+.smo-player__progress {
+    position: relative;
+    height: 6px;
+    background: var(--bg-border);
+    border-radius: var(--radius-full);
+    overflow: visible;
+    cursor: pointer;
+}
+
+.smo-player__progress-fill {
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    width: 0%;
+    border-radius: var(--radius-full);
+    background: var(--gradient-accent-vivid);
+    box-shadow: 0 0 8px var(--accent-glow);
+    transition: width 0.08s linear;
+    pointer-events: none;
+}
+
+/* Range scrubber — invisible overlay on progress bar */
+.smo-player__scrubber {
+    position: absolute;
+    top: -6px; left: 0;
+    width: 100%;
+    height: 18px;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    outline: none;
+}
+
+.smo-player__scrubber::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg-card);
+    box-shadow: 0 0 6px var(--accent-glow);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.smo-player__scrubber:hover::-webkit-slider-thumb,
+.smo-player__scrubber:active::-webkit-slider-thumb {
+    transform: scale(1.3);
+    box-shadow: 0 0 12px var(--accent-glow);
+}
+
+.smo-player__scrubber::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg-card);
+    box-shadow: 0 0 6px var(--accent-glow);
+    cursor: pointer;
+}
+
+.smo-player__scrubber::-moz-range-track {
+    background: transparent;
+    border: none;
+    height: 0;
+}
+
+/* ── Volume ── */
+.smo-player__vol {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.smo-player__vol-btn {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 4px;
+    transition: color var(--transition-fast);
+    display: flex;
+    align-items: center;
+}
+
+.smo-player__vol-btn:hover {
+    color: var(--accent);
+}
+
+/* Volume slider */
+.smo-player__vol-slider {
+    width: 60px;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--bg-border);
+    border-radius: var(--radius-full);
+    outline: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.smo-player__vol-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--text-secondary);
+    border: 2px solid var(--bg-card);
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.smo-player__vol-slider:hover::-webkit-slider-thumb {
+    background: var(--accent);
+}
+
+.smo-player__vol-slider::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--text-secondary);
+    border: 2px solid var(--bg-card);
+    cursor: pointer;
+}
+
+.smo-player__vol-slider::-moz-range-track {
+    background: var(--bg-border);
+    border: none;
+    height: 4px;
+    border-radius: var(--radius-full);
+}
+
+/* ── Mobile: hide volume slider, show only mute btn ── */
+@media (max-width: 480px) {
+    .smo-player__vol-slider {
+        display: none;
+    }
+    .smo-player__viz {
+        display: none;
+    }
+    .smo-player__inner {
+        gap: var(--space-sm);
+    }
+    .smo-player {
+        padding: var(--space-sm) var(--space-md);
+    }
+}
+
+
+
+
+
+
 
 
 
@@ -1106,63 +1257,6 @@ select.form-control[multiple],
 .cta-banner .btn {
     position: relative;
 }
-/*****************************/
-/* حاوية المشغل المخصص */
-/* .custom-player-wrapper {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 5;
-} */
-
-/* طبقة التعتيم الخفيفة فوق الصورة */
-/* .play-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.3s ease;
-} */
-
-/* .custom-player-wrapper:hover .play-overlay {
-    background: rgba(0, 0, 0, 0.4);
-} */
-
-/* زر التشغيل - ستايل يوتيوب */
-/* .play-button-yt {
-    width: 68px;
-    height: 48px;
-    background-color: rgba(33, 33, 33, 0.8); 
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 20px;
-    transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-} */
-
-/* عند تمرير الماوس يتغير اللون للأحمر مثل يوتيوب */
-/* .custom-player-wrapper:hover .play-button-yt {
-    background-color: #ff0000;
-} */
-
-/* إخفاء الزر عند تشغيل المقطع */
-/* .custom-player-wrapper.is-playing .play-overlay {
-    opacity: 0;
-    pointer-events: none;
-} */
-
-/* .audio-element {
-    display: none; 
 /* ═══════════════════════════════
    RESPONSIVE — Mobile
    ═══════════════════════════════ */
@@ -1273,41 +1367,3 @@ select.form-control[multiple],
         grid-template-columns: 1fr;
     }
 }
-
-/* Container for the media */
-/* .sample-card__media {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16 / 9;This ensures the box has height even if the image is missing 
-    background-color: var(--bg-elevated);
-    overflow: hidden;
-} */
-
-/* Background Image logic for uploads */
-/* .media-upload-bg {
-    background-size: cover;   
-    background-position: center; 
-    background-repeat: no-repeat;
-} */
-
-/* Hide the black video box but keep the audio functional */
-/* .audio-element {
-    width: 100%;
-    height: 100%;
-    background: transparent !important;
-    object-fit: cover;
-    opacity: 0; 
-} */
-
-/* Ensure the player wrapper covers the whole background */
-/* .custom-player-wrapper {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
-} */
