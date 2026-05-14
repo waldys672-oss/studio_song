@@ -37,7 +37,7 @@ class Config:
     # 4. Cloudinary configuration for storage
     CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL')
     if CLOUDINARY_URL:
-        cloudinary.config(secure=True)
+        cloudinary.config(cloudinary_url=CLOUDINARY_URL, secure=True)
 
     # 5. WhatsApp configuration
     WHATSAPP_NUMBER = '+966558262881'

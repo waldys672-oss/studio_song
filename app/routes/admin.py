@@ -155,19 +155,35 @@ def get_selected_singers():
 
 def save_file(file, extensions=ALLOWED_EXTENSIONS, resource_type='auto'):
     if file and file.filename and allowed_file(file.filename, extensions):
+        # ── Cloudinary upload (persistent, cloud-based storage) ──────────
         if current_app.config.get('CLOUDINARY_URL'):
             try:
-                upload_result = cloudinary.uploader.upload(file, resource_type=resource_type)
+                # Use upload_large to support large audio/video files
+                upload_result = cloudinary.uploader.upload_large(file, resource_type=resource_type)
                 secure_url = upload_result.get('secure_url')
                 if secure_url:
                     return secure_url
+                current_app.logger.error('Cloudinary upload returned no secure_url')
             except Exception as exc:
-                current_app.logger.warning(f'Cloudinary upload failed, falling back to local storage: {exc}')
-                try:
-                    file.stream.seek(0)
-                except Exception:
-                    pass
+                current_app.logger.error(f'Cloudinary upload failed: {exc}')
+                flash(f'فشل الرفع السحابي (Cloudinary): {str(exc)}', 'error')
+                return None
 
+        # ── On Render the filesystem is ephemeral — refuse local fallback ─
+        is_render = os.environ.get('RENDER', '').strip().lower() == 'true'
+        if is_render:
+            current_app.logger.error(
+                'CLOUDINARY_URL is not configured on Render. '
+                'Local uploads will be lost — aborting save.'
+            )
+            flash(
+                'التخزين السحابي غير مفعل — لا يمكن رفع الملفات. '
+                'يرجى إعداد CLOUDINARY_URL في لوحة Render.',
+                'error',
+            )
+            return None
+
+        # ── Fallback: save to local disk (development only) ──────────────
         filename = secure_filename(file.filename)
         if not filename:
             return None
