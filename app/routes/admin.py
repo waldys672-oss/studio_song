@@ -158,8 +158,7 @@ def save_file(file, extensions=ALLOWED_EXTENSIONS, resource_type='auto'):
         # ── Cloudinary upload (persistent, cloud-based storage) ──────────
         if current_app.config.get('CLOUDINARY_URL'):
             try:
-                # Use upload_large to support large audio/video files
-                upload_result = cloudinary.uploader.upload_large(file, resource_type=resource_type)
+                upload_result = cloudinary.uploader.upload(file.stream, resource_type=resource_type)
                 secure_url = upload_result.get('secure_url')
                 if secure_url:
                     return secure_url
