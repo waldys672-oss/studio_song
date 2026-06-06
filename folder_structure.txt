@@ -1,0 +1,92 @@
+Folder PATH listing for volume OS
+Volume serial number is C0000100 2836:138E
+C:\USERS\OWNER\DESKTOP\STUDIO_SONG
+³   .env
+³   .gitignore
+³   config.py
+³   folder_structure.txt
+³   requirements.txt
+³   run.py
+³   
+ÃÄÄÄ.github
+³   ÀÄÄÄworkflows
+³           keep-render-awake.yml
+³           
+ÃÄÄÄapp
+³   ³   extensions.py
+³   ³   models.py
+³   ³   __init__.py
+³   ³   
+³   ÃÄÄÄroutes
+³   ³   ³   admin.py
+³   ³   ³   auth.py
+³   ³   ³   main.py
+³   ³   ³   orders.py
+³   ³   ³   __init__.py
+³   ³   ³   
+³   ³   ÀÄÄÄ__pycache__
+³   ³           admin.cpython-314.pyc
+³   ³           auth.cpython-314.pyc
+³   ³           main.cpython-314.pyc
+³   ³           orders.cpython-314.pyc
+³   ³           __init__.cpython-314.pyc
+³   ³           
+³   ÃÄÄÄstatic
+³   ³   ÃÄÄÄcss
+³   ³   ³       base.css
+³   ³   ³       components.css
+³   ³   ³       pages.css
+³   ³   ³       variables.css
+³   ³   ³       
+³   ³   ÃÄÄÄimg
+³   ³   ³       home-hero.png
+³   ³   ³       
+³   ³   ÃÄÄÄjs
+³   ³   ³       main.js
+³   ³   ³       
+³   ³   ÀÄÄÄuploads
+³   ³           1778534565308_mp3
+³   ³           
+³   ÃÄÄÄtemplates
+³   ³   ³   about.html
+³   ³   ³   base.html
+³   ³   ³   category.html
+³   ³   ³   custom_order.html
+³   ³   ³   index.html
+³   ³   ³   macros.html
+³   ³   ³   sample.html
+³   ³   ³   singer.html
+³   ³   ³   
+³   ³   ÃÄÄÄadmin
+³   ³   ³       categories.html
+³   ³   ³       category_form.html
+³   ³   ³       dashboard.html
+³   ³   ³       orders.html
+³   ³   ³       order_detail.html
+³   ³   ³       samples.html
+³   ³   ³       sample_form.html
+³   ³   ³       singers.html
+³   ³   ³       singer_form.html
+³   ³   ³       
+³   ³   ÃÄÄÄauth
+³   ³   ³       login.html
+³   ³   ³       register.html
+³   ³   ³       
+³   ³   ÀÄÄÄdashboard
+³   ³           my_orders.html
+³   ³           order_detail.html
+³   ³           
+³   ÀÄÄÄ__pycache__
+³           extensions.cpython-314.pyc
+³           models.cpython-314.pyc
+³           __init__.cpython-314.pyc
+³           
+ÃÄÄÄinstance
+³       sumo.db
+³       sumo.sqbpro
+³       ?instance - ©êª Ÿ¦¢­Ÿ©.lnk
+³       
+ÀÄÄÄ__pycache__
+        config.cpython-314.pyc
+        run.cpython-314.pyc
+        
