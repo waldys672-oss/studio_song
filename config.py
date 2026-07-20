@@ -1,6 +1,6 @@
 import os
 import cloudinary
-
+from sqlalchemy.pool import NullPool 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config:
