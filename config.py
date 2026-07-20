@@ -7,7 +7,7 @@ class Config:
     # 1. Secret Key Protection
     SECRET_KEY = os.environ.get('SECRET_KEY', 'sumo-secret-key-change-in-production')
 
-    # 2. Database configuration with Render Postgres fix
+   # 2. Database configuration with Render Postgres fix
     uri = os.environ.get(
         'DATABASE_URL',
         'sqlite:///' + os.path.join(basedir, 'instance', 'sumo.db')
@@ -21,13 +21,9 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # ─── DATABASE PERFORMANCE OPTIMIZATIONS ───
-    # These settings prevent connection drops and make queries much faster
+    # Changed to NullPool to prevent exhausting Neon's free tier compute quota
     SQLALCHEMY_ENGINE_OPTIONS = {
-        "pool_size": 5,                # Keep 5 active connections ready to serve users instantly
-        "max_overflow": 10,            # Allow up to 10 extra temporary connections during peak traffic
-        "pool_timeout": 30,            # Wait up to 30 seconds for a connection before giving up
-        "pool_recycle": 1200,          # Automatically recycle connections every 20 minutes
-        "pool_pre_ping": True,         # CRITICAL: Tests if the connection is still alive before using it
+        'poolclass': NullPool  # <-- 2. Replaced the 5 old settings with this
     }
 
     # 3. File upload limits
@@ -38,7 +34,6 @@ class Config:
     CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL')
     if CLOUDINARY_URL:
         cloudinary.config(cloudinary_url=CLOUDINARY_URL, secure=True)
-
     # 5. WhatsApp configuration
     WHATSAPP_NUMBER = '+966558262881'
 
