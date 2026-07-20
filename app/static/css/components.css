@@ -533,6 +533,7 @@
 /* Range scrubber — invisible overlay on progress bar */
 .smo-player__scrubber {
     position: absolute;
+    direction: ltr ;
     top: -6px; left: 0;
     width: 100%;
     height: 18px;
